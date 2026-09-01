@@ -27,7 +27,7 @@ app.get('/threads', async (c) => {
   const q = c.req.query('q')
   const limit = Math.min(parseInt(c.req.query('limit') || '50', 10), 100)
 
-  let sql = `SELECT t.*, COALESCE(SUM(p.duration),0) as total_duration, COUNT(p.id) as post_count FROM threads t LEFT JOIN posts p ON t.id = p.thread_id`
+  let sql = `SELECT t.*, COALESCE(SUM(p.duration),0) as total_duration, COUNT(p.id) as post_count, (SELECT audio_url FROM posts WHERE thread_id = t.id ORDER BY created_at DESC LIMIT 1) as latest_audio_url FROM threads t LEFT JOIN posts p ON t.id = p.thread_id`
   const where: string[] = []
   const params: (string | number)[] = []
 
