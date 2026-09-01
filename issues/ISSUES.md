@@ -17,7 +17,9 @@
 | 9 | P1 | 古い投稿自動クリーンアップ | 旧#6 | cron or 投稿時n件保持 |
 | 10 | P1 | 接続状態オーバーレイ (切断時グレースケール) | 旧#11 | CF WebSocket/WebTransport?
 | 11 | P1 | ランディング マイクチェック | 旧#7 | オンボーディング |
-| 12 | P1 | DBテキスト検索 (FTS5) | - | ユーザー要望「検索したい」 |
+| 12 | P1 | DBテキスト検索 (LIKE) | - | ユーザー要望「検索したい」 |
+| 13 | P0 | デプロイ戦略（Home / Git連携 / Actions） | - | [詳細](13.md)。推奨: Pages Git連携 |
+| 14 | P0 | OpenAPI 仕様書 | - | `openapi.yaml` 作成済 |
 
 ## 旧issueからの判断・棄却
 
@@ -30,6 +32,16 @@
 | 10 | close | Elixir/HEEx固有。新アーキではReact |
 | 11 | 継承(#10) | UI/UX。切断検知方法はWebSocket→Realtime or fetchポーリング |
 | 12 | close | Elixir/shiritori固有。汎用バリデーションUIは別途考慮可 |
+
+## 完了タスク
+
+| # | タイトル | commit |
+|---|----------|--------|
+| 1 | Next.js + Hono + CF scaffold | 4c38866 |
+| 2 | シャボン玉 sphere UI + PNG背景 | 4db12ff |
+| 4 | Thread/Post API + R2 upload | 4c38866 |
+| 5 | PNGデコード + Auto Player | 4c38866 |
+| 14 | OpenAPI 仕様書 | (未push) |
 
 ## ユーザーの追加要望（口頭/指示抽出）
 - Cloudflare のみで完結

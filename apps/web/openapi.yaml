@@ -1,0 +1,382 @@
+openapi: 3.0.3
+info:
+  title: Voice BBS Web API
+  description: |
+    匿名音声掲示板 voice-bbs-web の REST API。
+    音声は PNG 画素にエンコードして R2 に保存される。
+    テキストは D1 SQLite に保存され全文検索可能。
+  version: 2.0.0
+  contact:
+    name: bonsai
+
+servers:
+  - url: https://voice-bbs-web.pages.dev/api
+    description: Cloudflare Pages Production
+  - url: http://localhost:8788/api
+    description: Local dev (wrangler pages dev)
+
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      summary: ヘルスチェック
+      tags: [System]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  /categories:
+    get:
+      operationId: listCategories
+      summary: コンペカテゴリ一覧
+      tags: [Categories]
+      responses:
+        '200':
+          description: カテゴリ一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  categories:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Category'
+
+  /threads:
+    get:
+      operationId: listThreads
+      summary: スレッド一覧（シャボン玉）
+      tags: [Threads]
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+            enum: [want, search, trouble, motetai]
+        - name: q
+          in: query
+          description: テキスト検索（content LIKE %%）
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 100
+      responses:
+        '200':
+          description: スレッド一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  threads:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Thread'
+
+    post:
+      operationId: createThread
+      summary: 新規スレッド作成
+      tags: [Threads]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category_id, device_id]
+              properties:
+                category_id:
+                  type: string
+                  enum: [want, search, trouble, motetai]
+                title:
+                  type: string
+                  nullable: true
+                device_id:
+                  type: string
+      responses:
+        '200':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  id:
+                    type: string
+                    format: uuid
+        '429':
+          description: レート制限
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /threads/{id}/posts:
+    get:
+      operationId: listPosts
+      summary: スレッド内投稿一覧
+      tags: [Posts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: 投稿一覧
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Post'
+
+    post:
+      operationId: createPost
+      summary: 音声投稿（PNGエンコード）
+      tags: [Posts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image_base64, duration, device_id]
+              properties:
+                image_base64:
+                  type: string
+                  description: PNG エンコードされた音声データ（Base64）
+                duration:
+                  type: number
+                  format: float
+                  description: 音声長（秒）
+                  example: 3.5
+                device_id:
+                  type: string
+                  description: デバイス識別子（レート制限用）
+                content:
+                  type: string
+                  description: テキスト（STT結果・要約など）
+                  nullable: true
+      responses:
+        '200':
+          description: 投稿成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  id:
+                    type: string
+                    format: uuid
+                  url:
+                    type: string
+                    description: R2 に保存された PNG 公開 URL
+                  remaining:
+                    type: integer
+                    description: 残り投稿数（今日）
+        '429':
+          description: レート制限到達
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /posts/{id}:
+    delete:
+      operationId: deletePost
+      summary: 投稿削除（本人のみ）
+      tags: [Posts]
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: device_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 削除成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+        '403':
+          description: 本人以外
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: 投稿なし
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /count/{device_id}:
+    get:
+      operationId: countByDevice
+      summary: デバイス別本日投稿数
+      tags: [Posts]
+      parameters:
+        - name: device_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 投稿数
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  count:
+                    type: integer
+                  remaining:
+                    type: integer
+
+components:
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        status:
+          type: string
+          example: ok
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+      example:
+        id: want
+        name: こんなのほしい
+        color: '#ec4899'
+
+    Thread:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        category_id:
+          type: string
+        title:
+          type: string
+          nullable: true
+        device_id:
+          type: string
+        created_at:
+          type: integer
+          description: unix epoch seconds
+        total_duration:
+          type: number
+          description: スレッド内の合計音声時間
+        post_count:
+          type: integer
+        latest_audio_url:
+          type: string
+          description: 最新投稿の PNG URL（シャボン玉背景用）
+          nullable: true
+      example:
+        id: "b9edc320-6c30-4749-8015-8a04449afd7a"
+        category_id: want
+        title: テスト検索
+        total_duration: 1.5
+        post_count: 1
+        latest_audio_url: "https://pub-xxx.r2.dev/posts/xxx.png"
+
+    Post:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        thread_id:
+          type: string
+          format: uuid
+        device_id:
+          type: string
+        audio_url:
+          type: string
+        duration:
+          type: number
+        content:
+          type: string
+          nullable: true
+        created_at:
+          type: integer
+      example:
+        id: "fa6c771f-bd9c-437b-91db-d9c001d4e4fa"
+        thread_id: "b9edc320-6c30-4749-8015-8a04449afd7a"
+        audio_url: "https://pub-xxx.r2.dev/posts/xxx.png"
+        duration: 1.5
+        content: テスト投稿です
+
+    ErrorResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+          example: false
+        error:
+          type: string
+        message:
+          type: string
+      example:
+        ok: false
+        error: limit_reached
+        message: 本日の投稿上限に達しました
+
+security: []
