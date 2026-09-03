@@ -10,6 +10,7 @@
 
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
+| N8 | P1 | モバイルPWA向け UX/UI 検討(複数パターン×6軸採点) | [ ] | 採点基準策定済み(`docs/ux.md`)。次: パターン案提示→6軸採点→選定→spec反映。PWA対応(manifest/SW)は選定後に |
 | N7 | P0 | Next 実装の音声デコードバグ修正 | [x] | 発見: デコーダが alpha を長さに混入(実録音は再生不能だった)。Vue 側 `pngbytes.ts` で修正実装 + 往復テスト17本緑。既存PNGとは配置互換のため旧データも再生可 |
 | N6 | P0 | Next.js → Vue 移行 (ADR-001) | [~] | P2〜P4 実装済み: audioCodec純関数 + ロビー/部屋UI + 録音/再生。テスト21本緑。preview: https://voice-bbs-web-vue.pages.dev(本番D1/R2接続確認済)。P5切替・P6 CIは未。`docs/plan.md` 参照 |
 | N5 | P0 | vitest テスト基盤導入 + CI (GitHub Actions) | [!] | ビルド依存の衝突(N1)がブロッカー。`docs/test.md` 参照 |
