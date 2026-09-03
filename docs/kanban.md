@@ -45,6 +45,9 @@
 | `docs/deploy.md` | [x] デプロイ・運用 |
 | `docs/test.md` | [x] テスト方針 |
 | `docs/PRD.md` | [x] 製品要求 |
+| `docs/adr.md` | [x] ADR-001: Next→Vue 移行 |
+| `docs/dx.md` | [x] 開発体制・docs駆動 |
+| `docs/plan.md` | [x] 移行計画(test/ｽｹｼﾞｭｰﾙ/token見積) |
 | `docs/kanban.md` | [x] 本ファイル |
 
 ## 4. 達成度サマリ
