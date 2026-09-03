@@ -65,7 +65,7 @@
 
 ## 7. 制約・既知の罠
 
-- `docs/STACK.md` §5 参照: r2.dev CORS 不可、npm peer conflict、レート制限の設計等
+- `docs/deploy.md` §4 参照: r2.dev CORS 不可、npm peer conflict 等の罠、レート制限の設計等
 - 音声の実データ保存形式(PNG埋め込み)は独自仕様 → 互換性維持が最優先
 
 ## 8. 今後のロードマップ(概略)

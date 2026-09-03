@@ -46,7 +46,8 @@ voice-bbs-web/
 ├── docs/
 │   ├── spec.md       # 設計書
 │   ├── issue.md      # 課題管理(新規を上・旧を下)
-│   ├── STACK.md      # 実装・運用実態
+│   ├── STACK.md      # 実装・アーキテクチャ実態
+│   ├── deploy.md     # デプロイ・運用
 │   ├── test.md       # テスト方針
 │   ├── PRD.md        # 製品要求
 │   └── kanban.md     # 達成度追跡

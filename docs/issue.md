@@ -29,7 +29,7 @@
 実績メモ(2026-09-03):
 - Pages `voice-bbs-web` / D1 `voice-bbs-db` / R2 `vonsaiapps` で稼働
 - 認証は `CLOUDFLARE_API_TOKEN`(Workers Scripts / Pages / D1 / R2 の Edit)または OAuth
-- 詳細・罠: `docs/STACK.md` §4・§5
+- 詳細・罠: `docs/deploy.md`
 
 ---
 

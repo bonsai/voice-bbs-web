@@ -1,6 +1,6 @@
 # Voice BBS Web — 技術スタック(実装済み実態)
 
-> 設計構想は `docs/spec.md`、課題管理は `docs/issue.md` を参照。本ドキュメントは**現時点の実装・運用実態**を記録する。
+> 設計構想は `docs/spec.md`、課題管理は `docs/issue.md`、**デプロイ/運用は `docs/deploy.md`** を参照。本ドキュメントは**現時点の実装・アーキテクチャ実態**を記録する。
 
 ## 1. 技術スタック
 
@@ -17,7 +17,7 @@
 ### バインディング (`apps/web/wrangler.toml`)
 - `DB` — D1 `voice-bbs-db`
 - `BUCKET` — R2 `vonsaiapps`
-- `R2_PUBLIC_URL` — 旧方式の残骸で**コード上は未使用**(v1 で絶対URL保存していたが廃止)
+- `R2_PUBLIC_URL` — 旧方式の残骸で**コード上は未使用**(絶対URL保存を廃止したため)
 
 ## 2. アーキテクチャ / データフロー
 
@@ -39,7 +39,7 @@ GET /api/audio/:key  (Pages Function)
 → createImageBitmap → getImageData → バイト復元 → decodeAudioData → AudioContext 再生
 ```
 
-**設計判断**: 保存URLは相対パス + Function 経由で配信する。理由は §5「既知の罠」の r2.dev CORS 不可のため。
+**設計判断**: 保存URLは相対パス + Function 経由で配信する。理由は `docs/deploy.md` §4-1(r2.dev が CORS 非対応のため)。
 
 ### DB スキーマ
 - `categories` (seed 4件: want / search / trouble / motetai)
@@ -63,41 +63,13 @@ apps/web/
 └── package.json
 ```
 
-## 4. デプロイ手順 (実測済み: 2026-09-03)
-
-```bash
-cd apps/web
-npm install --legacy-peer-deps   # §5-2 参照
-npm run build                    # out/ 生成
-
-# 初回のみ
-npx wrangler d1 create voice-bbs-db   # → database_id を wrangler.toml に反映
-# migrations 適用 (D1 API の /raw でも可)
-npx wrangler d1 migrations apply voice-bbs-db --remote
-
-# deploy (functions/ も自動バンドル)
-npx wrangler pages deploy out --project-name voice-bbs-web
-```
-
-認証: `CLOUDFLARE_API_TOKEN` 環境変数、または `wrangler login` (OAuth)。
-
-実環境リソース (account `290e65605de6f2b8a5f61dbfaa36e28c`):
-- Pages: `voice-bbs-web` → https://voice-bbs-web.pages.dev
-- D1: `voice-bbs-db` (`f5e17b02-92d5-4be8-b7f3-c633d3a922c5`)
-- R2: `vonsaiapps` (r2.dev公開URLは発行済みだが**使用していない**)
-
-## 5. 既知の罠
-
-1. **r2.dev 公開URLは CORS ヘッダを返さない** → ブラウザからの fetch が必ずブロックされる。bucket CORS 設定も r2.dev には適用されない(実測)。**同一オリジンの Function プロキシ配信が必須**。カスタムドメインは account に zone が無いため不可。
-2. **`npm install` が peer conflict で失敗する** — 未使用の `@cloudflare/next-on-pages` (devDeps) が `@cloudflare/workers-types@^5` と衝突。現状 `--legacy-peer-deps` 必須。CF の Git 連携ビルドも同様に失敗する見込み。→ 解決には未使用 dep の削除が必要。
-3. **WSL から Windows 側の global wrangler を叩くと workerd 非互換でクラッシュ**。`node_modules/.bin/wrangler` (Linux) を使う。
-4. **wrangler OAuth refresh token は使い捨て(ローテーション)**。使い回すと `invalid_grant`。詰まったら `CLOUDFLARE_API_TOKEN` に切替。
-5. `out/` は `.gitignore` 済みのビルド成果物。Functions の変更のみでも `wrangler pages deploy out` で再デプロイ可。
-6. 古い絶対URL(`pub-*.r2.dev/...`)の既存レコードは再生不可(プロキシ移行前データ)。マイグレーション時は書き換え/削除が必要。
-
-## 6. 開発基盤の現状
+## 4. 開発基盤の現状
 
 - lint: ESLint (`npm run lint`) — 設定あり
 - typecheck: script 未定義 (`npx tsc --noEmit` 相当は手動)
-- **test: 未導入** (vitest 等なし)
-- **CI/CD: 未導入** (GitHub Actions なし) — `docs/issue.md` のデプロイ戦略節に集約
+- **test: 未導入** (vitest 等なし) — 方針は `docs/test.md`、導入は `docs/issue.md` N5
+- **CI/CD: 未導入** — `docs/issue.md` のデプロイ戦略節に集約
+
+## 5. 運用・デプロイ
+
+→ **`docs/deploy.md`** に分離。認証 / 手順 / 実リソース / 罠 / 自動化方針を参照。

@@ -53,7 +53,7 @@ src/lib/__tests__/api.test.ts
 1. **CI (test系)** — `test.yml`: vitest run + typecheck(`tsc --noEmit`) + lint。PR 必須 gate。
 2. **CI (refactor系)** — リファクタ作業の安全確認: 上記 CI + (任意)変更ファイル限定の差分テスト。最初は1本に統合してよい。
 
-> `npm install` は §STACK.md の peer conflict のため `--legacy-peer-deps` を workflow でも使用(解消されるまで)。未使用 `@cloudflare/next-on-pages` の削除は別 issue として扱う。
+> `npm install` は `docs/deploy.md` §4-2 の peer conflict のため `--legacy-peer-deps` を workflow でも使用(解消されるまで)。未使用 `@cloudflare/next-on-pages` の削除は `docs/issue.md` N4 として管理。
 
 ## 7. 実施手順(次のステップ)
 

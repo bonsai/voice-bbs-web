@@ -1,7 +1,7 @@
 # Voice BBS Web — Kanban / 達成度 (2026-09-03)
 
 > 凡例: `[x]`完了 / `[~]`進行・部分 / `[ ]`未着手 / `[!]`ブロック
-> 参照: `docs/issue.md`(課題) / `docs/PRD.md`(要求) / `docs/STACK.md`(実装実態) / `docs/test.md`(テスト計画)
+> 参照: `docs/issue.md`(課題) / `docs/PRD.md`(要求) / `docs/STACK.md`(実装実態) / `docs/deploy.md`(運用) / `docs/test.md`(テスト計画)
 
 ## 1. 会話・指示ベース(今回セッション)
 
@@ -41,7 +41,8 @@
 | ファイル | 状態 |
 |---|---|
 | `docs/spec.md` | 設計書(一部 未実装構想を含む。STACK.md が実態) |
-| `docs/STACK.md` | [x] 実装・運用実態 |
+| `docs/STACK.md` | [x] 実装・アーキテクチャ実態(deploy は `deploy.md` へ分離) |
+| `docs/deploy.md` | [x] デプロイ・運用 |
 | `docs/test.md` | [x] テスト方針 |
 | `docs/PRD.md` | [x] 製品要求 |
 | `docs/kanban.md` | [x] 本ファイル |
