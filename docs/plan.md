@@ -31,8 +31,8 @@
 |---|---|---|---|---|
 | P1 | 文書整備(PRD/spec/ADR/issue/本計画) | docs 群 | レビュー | [x] 済み |
 | P2 | `audioCodec` 移植 + テスト先行(L0 + fixture 回帰) | `src/lib/wav.ts` / `pngbytes.ts` / `silence.ts` + tests | vitest 17本緑 + typecheck | [x] 済み |
-| P3 | API クライアント移植 + **ロビー UI**(room 一覧・カテゴリ) | `api.ts` / RoomLobby | build + dev 表示 | [ ] |
-| P4 | **部屋ビュー**: 泡フィールド・タップ再生・録音 composable 移植 | BubbleField / Recorder | L1 テスト + dev 動作 | [ ] |
+| P3 | API クライアント移植 + **ロビー UI**(room 一覧・カテゴリ) | `api.ts` / `Lobby.vue` | build + preview 表示 | [x] 済み |
+| P4 | **部屋ビュー**: 泡フィールド・タップ再生・録音 composable 移植 | `RoomView.vue` / `usePlayer` / `useRecorder` | テスト21本緑 + preview API接続 | [x] 済み |
 | P5 | 並行稼働 → CF Pages 切替 deploy + Next 削除・docs 追従 | 本番 URL | 実ブラウザ録音→再生 | [ ] |
 | P6 | CI(Actions) + 残 P1 機能(削除 UI / PWA / ambient) | issue 消化 | CI 緑 | [ ] |
 

@@ -1,0 +1,15 @@
+name = "voice-bbs-web"
+pages_build_output_dir = "dist"
+compatibility_date = "2025-09-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "voice-bbs-db"
+database_id = "f5e17b02-92d5-4be8-b7f3-c633d3a922c5"
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "vonsaiapps"
+
+[vars]
+R2_PUBLIC_URL = "https://pub-c1b1ca0b3e734d349e47d6fab1392fef.r2.dev"

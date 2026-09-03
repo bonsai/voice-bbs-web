@@ -13,8 +13,8 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      // local dev: wrangler pages dev (Functions) へ API を転送
-      '/api': 'http://localhost:8788',
+      // local dev: 本番の Hono Functions(同一 API 境界)へ転送
+      '/api': 'https://voice-bbs-web.pages.dev',
     },
   },
   test: {

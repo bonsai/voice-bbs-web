@@ -21,8 +21,8 @@
 - **ADR-001 実行中**: フロントを Next.js → **Vue 3 + Vite + TS** へ移行(`docs/adr.md`、issue **N6**)。作業計画 = `docs/plan.md`(次は **P2: audioCodec テスト先行移植**)
 - 構成:
   - `apps/web` — Next.js 実装(現本番稼働、Hono Functions + D1 + R2)
-  - `apps/web-vue` — Vue 移行先(雛形済み: vitest 緑 / build OK)
-- **API 境界は不変**: 既存 Hono API・`/api/audio` 同一オリジンプロキシ・DB は移行対象外
+  - `apps/web-vue` — Vue 移行先(**P2〜P4 実装済み**、Hono Functions 同梱)。preview: https://voice-bbs-web-vue.pages.dev / テスト 21本緑
+- **API 境界は不変**: 既存 Hono API・`/api/audio` 同一オリジンプロキシ・DB は移行対象外(Vue 側にも同梱済み)
 - 本番: https://voice-bbs-web.pages.dev(実リソース・罠は `docs/deploy.md`)
 - ブロッカー: `npm install` は peer conflict(next-on-pages)で `--legacy-peer-deps` が要 → 移行で解消見込み
 - アクティブイシュー(`docs/issue.md` 新規=上): N6 移行[~] / N5 CI・vitest[!] / N4 依存衝突[!] / N3 削除UI[~]

@@ -11,7 +11,7 @@
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
 | N7 | P0 | Next 実装の音声デコードバグ修正 | [x] | 発見: デコーダが alpha を長さに混入(実録音は再生不能だった)。Vue 側 `pngbytes.ts` で修正実装 + 往復テスト17本緑。既存PNGとは配置互換のため旧データも再生可 |
-| N6 | P0 | Next.js → Vue 移行 (ADR-001) | [~] | P2 まで完了: 雛形 + audioCodec純関数移植(wav/pngbytes/silence) + テスト17本緑。`docs/plan.md` / `docs/adr.md` / `docs/dx.md` §7 参照 |
+| N6 | P0 | Next.js → Vue 移行 (ADR-001) | [~] | P2〜P4 実装済み: audioCodec純関数 + ロビー/部屋UI + 録音/再生。テスト21本緑。preview: https://voice-bbs-web-vue.pages.dev(本番D1/R2接続確認済)。P5切替・P6 CIは未。`docs/plan.md` 参照 |
 | N5 | P0 | vitest テスト基盤導入 + CI (GitHub Actions) | [!] | ビルド依存の衝突(N1)がブロッカー。`docs/test.md` 参照 |
 | N4 | P0 | ビルド依存の衝突解消 | [!] | 未使用 `@cloudflare/next-on-pages` × `workers-types@^5` → plain `npm install` が ERESOLVE。→ next-on-pages 削除 or 解決 |
 | N3 | P1 | 投稿者本人削除の UI 化 | [~] | 旧#8。API(`DELETE /api/posts/:id`)実装済み・UI 未接続 |
