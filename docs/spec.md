@@ -44,9 +44,12 @@ voice-bbs-web/
 │       ├── wrangler.toml
 │       └── package.json
 ├── docs/
-│   └── spec.md
-└── issues/
-    └── ISSUES.md
+│   ├── spec.md       # 設計書
+│   ├── issue.md      # 課題管理(新規を上・旧を下)
+│   ├── STACK.md      # 実装・運用実態
+│   ├── test.md       # テスト方針
+│   ├── PRD.md        # 製品要求
+│   └── kanban.md     # 達成度追跡
 ```
 
 Next.js は**単一ページ SPA** として動作。Thread 詳細は `?thread=xxx` クエリでモーダル表示し、直接リンク共有も可能。

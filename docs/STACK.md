@@ -1,6 +1,6 @@
 # Voice BBS Web — 技術スタック(実装済み実態)
 
-> 設計構想は `docs/spec.md`、課題管理は `issues/` を参照。本ドキュメントは**現時点の実装・運用実態**を記録する。
+> 設計構想は `docs/spec.md`、課題管理は `docs/issue.md` を参照。本ドキュメントは**現時点の実装・運用実態**を記録する。
 
 ## 1. 技術スタック
 
@@ -12,7 +12,7 @@
 | Storage | Cloudflare R2 (bucket `vonsaiapps`) — 音声PNG保存 | 実装済み |
 | 音声 | クライアント完結(MediaRecorder / Web Audio API / canvas) — サーバー負荷ゼロ | 実装済み |
 | リアルタイム | (spec.md では SSE/ポーリング構想) | **未実装** |
-| TTS seed / PWA / 管理者削除 等 | — | 未実装 (`issues/`) |
+| TTS seed / PWA / 管理者削除 等 | — | 未実装 (`docs/issue.md`) |
 
 ### バインディング (`apps/web/wrangler.toml`)
 - `DB` — D1 `voice-bbs-db`
@@ -100,4 +100,4 @@ npx wrangler pages deploy out --project-name voice-bbs-web
 - lint: ESLint (`npm run lint`) — 設定あり
 - typecheck: script 未定義 (`npx tsc --noEmit` 相当は手動)
 - **test: 未導入** (vitest 等なし)
-- **CI/CD: 未導入** (GitHub Actions なし) — `issues/13.md` で Git 連携 hands-off 案を検討中
+- **CI/CD: 未導入** (GitHub Actions なし) — `docs/issue.md` のデプロイ戦略節に集約

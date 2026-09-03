@@ -1,7 +1,7 @@
 # Voice BBS Web — Kanban / 達成度 (2026-09-03)
 
 > 凡例: `[x]`完了 / `[~]`進行・部分 / `[ ]`未着手 / `[!]`ブロック
-> 参照: `issues/`(課題) / `docs/PRD.md`(要求) / `docs/STACK.md`(実装実態) / `docs/test.md`(テスト計画)
+> 参照: `docs/issue.md`(課題) / `docs/PRD.md`(要求) / `docs/STACK.md`(実装実態) / `docs/test.md`(テスト計画)
 
 ## 1. 会話・指示ベース(今回セッション)
 
@@ -13,11 +13,11 @@
 | 4 | スタックドキュメント整備 | [x] | `docs/STACK.md` (commit `0b4427c`) |
 | 5 | テスト計画 | [x] | `docs/test.md` (commit `31d7daf`) |
 | 6 | PRD | [x] | `docs/PRD.md`(本pushに同梱) |
-| 7 | CICD (GitHub Actions: test系/refactor系) | [!] | 計画のみ(`docs/test.md` §6, `issues/13.md`)。**要 package.json の整理** |
+| 7 | CICD (GitHub Actions: test系/refactor系) | [!] | 計画のみ(`docs/test.md` §6, `docs/issue.md` デプロイ戦略節)。**要 package.json の整理** |
 | 8 | vitest 基盤導入 | [!] | `npm i -D vitest` が peer conflict で失敗(次節ブロッカー参照) |
 | 9 | 達成度 kanban | [x] | 本ファイル |
 
-## 2. Issue ベース (`issues/`)
+## 2. Issue ベース (集約先: `docs/issue.md`)
 
 | # | タイトル | 状態 | 備考 |
 |---|---|---|---|
@@ -33,7 +33,7 @@
 | 10 | 接続状態オーバーレイ | [ ] | — |
 | 11 | ランディング マイクチェック | [ ] | — |
 | 12 | DB テキスト検索 | [~] | API LIKE 検索 + FTS5 整備済み。UI 利用状況は要確認 |
-| 13 | デプロイ戦略 (13.md) | [~] | 手動 deploy で本番稼働。Git連携/手動 CI は未設定 |
+| 13 | デプロイ戦略 | [~] | `docs/issue.md` デプロイ戦略節に集約。手動deployで本番稼働、自動化は未設定 |
 | 14 | OpenAPI 仕様書 | [x] | `openapi.yaml` は repo に存在 ※ISSUES.md の「未push」記載は古い |
 
 ## 3. ドキュメント一覧

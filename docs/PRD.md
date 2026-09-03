@@ -1,7 +1,7 @@
 # Voice BBS Web — PRD (Product Requirements Document)
 
 > 状態: 公開アルファ(基本機能デプロイ済み) / 更新: 2026-09-03
-> 設計: `docs/spec.md` / 実装実態: `docs/STACK.md` / 課題・機能要求: `issues/`
+> 設計: `docs/spec.md` / 実装実態: `docs/STACK.md` / 課題: `docs/issue.md`
 
 ## 1. 概要 (One-liner)
 
@@ -33,7 +33,7 @@
 | 音声圧縮 | WAV → PNG バイト埋め込みでR2に保存 | 30秒/投稿上限 |
 | 再生配信 | Pages Function 経由の同一オリジン配信 | r2.dev CORS 不可の回避 |
 
-### P1(未実装 — `issues/`)
+### P1(未実装 — `docs/issue.md`)
 - TTS seed(Web Speech API サンプル投稿)
 - PWA(manifest / service worker / offline)
 - 投稿者本人削除(device_id ベース)→ 一部 API 実装済み・UI 未接続
