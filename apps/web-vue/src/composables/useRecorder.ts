@@ -23,6 +23,13 @@ export function useRecorder(
   let audioCtx: AudioContext | null = null
   let raf = 0
   let maxVol = 0
+  let discard = false
+
+  /** 押下をやめて録音を破棄(アップロードしない)。未録音時は no-op */
+  function cancel() {
+    discard = true
+    if (mediaRecorder && mediaRecorder.state === 'recording') mediaRecorder.stop()
+  }
 
   function drawWaveform() {
     const canvas = canvasRef.value
@@ -68,6 +75,10 @@ export function useRecorder(
         stream?.getTracks().forEach((t) => t.stop())
         stream = null
         cleanup()
+        if (discard) {
+          discard = false
+          return
+        }
         if (chunks.length === 0) return
         if (maxVol < 5) {
           error.value = 'volume_low'
@@ -140,5 +151,6 @@ export function useRecorder(
     canRecord,
     start,
     stop,
+    cancel,
   }
 }
