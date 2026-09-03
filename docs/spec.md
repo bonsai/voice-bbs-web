@@ -1,270 +1,179 @@
 # Voice BBS Web — 設計書
 
+> 状態: v2 設計(2026-09-03)。**製品モデル変更: スレッド→部屋(room)、シャボン玉=声(触ると喋る)**。
+> 実装・運用実態: `docs/STACK.md` / `docs/deploy.md`。課題: `docs/issue.md`。要求: `docs/PRD.md`。
+
 ## 概要
-匿名・認証不要の音声掲示板。誰でも声で書き込み、シャボン玉のようにふわふわ浮かぶ UI でスレッドを可視化。Cloudflare インフラのみで完結。
+
+匿名・認証不要の**音声掲示板**。声は「泡」となって**部屋(room)**の中をふわふわと漂う。泡に触れるとその声が話す。Cloudflare インフラのみで完結。
+
+## 製品コンセプト v2 — 部屋と声の泡
+
+| 概念 | 定義 |
+|---|---|
+| **部屋 (room)** | 声を集める「場」。テーマ/タイトルを持ち、カテゴリに属する。旧「スレッド」の置換。 |
+| **声の泡 (voice bubble)** | 音声投稿 1 件。room の中を漂う。旧「post」+ 旧 UI のスレッド泡が統合された存在。 |
+| **触ると喋る** | 泡に触れる = その泡の声がその場で再生される(部屋に入ってから再生、ではない)。 |
+| カテゴリ | want / search / trouble / motetai の分類。room を分類する。 |
+| device_id | 匿名識別。録音権(本日 4 件)と本人削除の鍵。 |
+
+### 体験の軸
+1. **空間を漂う声** — 声は「羅列」ではなく room 内に浮かび、常に少しずつ聞こえてくる(アンビエント)。
+2. **触れたら返事が返る** — 泡に触れると、その声だけがハッキリ聞こえる(近接の泡は小声に)。
+3. **部屋 = 会話の場** — 声を吹き込むと泡が生まれ、その場に浮かんでいく。過去の声と並んでいつでも聞き返せる。
+
+## 用語マップ(旧→新)
+
+| 旧(実装済み) | 新(設計) | 備考 |
+|---|---|---|
+| スレッド / Thread (`threads`) | **部屋 / room** | DB・API の物理名は現行維持し、改名は別イシュー |
+| 投稿 / Post (`posts`) | **声 / voice bubble (泡)** | 1 投稿 = 1 泡 |
+| Thread 一覧の泡(最新投稿が背景) | (廃止) | room は「泡」でなく「部屋の入り口」表示へ |
+| 泡タップ → Thread モーダル | **泡タップ → その声が喋る** | 再生は UI 遷移なしで完結 |
+| Thread モーダル + 自動連続再生 | room ビュー(部屋に入ると泡の空間) | — |
 
 ## 技術スタック
 
-| 層 | 技術 | 理由 |
-|---|---|---|
-| フロント | Next.js 15 (App Router) → static export | React, Tailwind, 開発速度。Cloudflare Pages へ deploy |
-| API | Hono on Cloudflare Pages Functions | 軽量、型安全、同じリポジトリでエッジ展開 |
-| DB | Cloudflare D1 (SQLite) | 無料 5GB, FTS5 全文検索対応 |
-| Storage | Cloudflare R2 (S3互換) | 音声 PNG 保存。無料 10GB/月、転送無料 |
-| リアルタイム | EventSource (SSE) or ポーリング | WebSocket 不要で配信 |
-| 音声処理 | クライアント完結 (Web Audio API, MediaRecorder) | サーバー負荷ゼロ、無料 |
+実装済み実態は `docs/STACK.md` §1。要約:
 
-## ディレクトリ構成
+| 層 | 技術 |
+|---|---|
+| フロント | Next.js 15 (App Router, static export) + React 19 + Tailwind v4 |
+| API | Hono on Cloudflare Pages Functions (`/api`、同一オリジン配信) |
+| DB | Cloudflare D1 (SQLite + FTS5 unicode61) |
+| Storage | Cloudflare R2(音声 = WAV→PNG 埋め込み) |
+| 音声処理 | クライアント完結(MediaRecorder / Web Audio API / canvas) |
+
+## 情報アーキテクチャ
 
 ```
-voice-bbs-web/
-├── apps/
-│   └── web/
-│       ├── src/
-│       │   ├── app/
-│       │   │   ├── page.tsx          # トップ (Bubble一覧 + Threadモーダル)
-│       │   │   └── layout.tsx
-│       │   ├── components/
-│       │   │   ├── BubbleField.tsx   # ふわふわ浮遊フィールド
-│       │   │   ├── ThreadModal.tsx   # Thread 詳細 / Auto Player
-│       │   │   ├── Recorder.tsx      # 長押し録音 UI
-│       │   │   └── CategoryTabs.tsx
-│       │   ├── hooks/
-│       │   │   ├── useAudioRecorder.ts  # 録音+PNGエンコード
-│       │   │   └── useAudioPlayer.ts    # 連続再生キュー
-│       │   └── lib/
-│       │       ├── audioCodec.ts     # encodeBytesAsPNG / decodePNGToWav
-│       │       └── api.ts            # fetch ラッパー
-│       ├── functions/
-│       │   └── api/
-│       │       └── [[route]].ts      # Hono Cloudflare Pages Functions
-│       ├── migrations/
-│       │   └── 0001_init.sql         # D1 schema
-│       ├── public/
-│       ├── wrangler.toml
-│       └── package.json
-├── docs/
-│   ├── spec.md       # 設計書
-│   ├── issue.md      # 課題管理(新規を上・旧を下)
-│   ├── STACK.md      # 実装・アーキテクチャ実態
-│   ├── deploy.md     # デプロイ・運用
-│   ├── test.md       # テスト方針
-│   ├── PRD.md        # 製品要求
-│   └── kanban.md     # 達成度追跡
+トップ(ロビー) ─ カテゴリで絞り込み ─ 部屋一覧
+    │
+    └─ 部屋ビュー(room) ─ 声の泡が漂う空間
+         ├─ 泡に触れる → その声が喋る
+         ├─ 録音(長押し) → 泡が生まれて浮かぶ
+         └─ (検討) 泡を長押し → その声を消す(本人のみ)
 ```
 
-Next.js は**単一ページ SPA** として動作。Thread 詳細は `?thread=xxx` クエリでモーダル表示し、直接リンク共有も可能。
+- トップ = **ロビー**: カテゴリタブ + 部屋(room)の入り口群。room は「ドア/小窓」のような最小表示(タイトル + 声の数 + カテゴリ色)。
+- room は `?room=xxx` クエリで直接リンク可能。
+- SPA 遷移を基本とし、room を開いたらブラウザバックでロビーへ。
 
 ## データモデル (D1 SQLite)
 
+物理構成は現行のまま(改名は別イシュー)。
+
 ```sql
--- コンペカテゴリ
-CREATE TABLE categories (
-  id    TEXT PRIMARY KEY,
-  name  TEXT NOT NULL,
-  color TEXT NOT NULL
-);
-
--- スレッド = シャボン玉
-CREATE TABLE threads (
-  id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  category_id TEXT NOT NULL REFERENCES categories(id),
-  title       TEXT,
-  device_id   TEXT NOT NULL,
-  created_at  INTEGER NOT NULL DEFAULT (unixepoch())
-);
-
--- 音声投稿
-CREATE TABLE posts (
-  id          TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(16)))),
-  thread_id   TEXT NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
-  device_id   TEXT NOT NULL,
-  audio_url   TEXT NOT NULL,     -- R2 public URL
-  duration    REAL NOT NULL,
-  content     TEXT,              -- STTテキスト / 要約 / seed本文
-  created_at  INTEGER NOT NULL DEFAULT (unixepoch())
-);
-
--- 全文検索インデックス
-CREATE TABLE search_index (
-  id        INTEGER PRIMARY KEY AUTOINCREMENT,
-  thread_id TEXT,
-  post_id   TEXT,
-  content   TEXT NOT NULL,
-  created_at INTEGER DEFAULT (unixepoch())
-);
-
-CREATE VIRTUAL TABLE search_index_fts USING fts5(
-  content,
-  content_rowid=id,
-  content=search_index
-);
-
-CREATE INDEX idx_posts_thread  ON posts(thread_id, created_at);
-CREATE INDEX idx_threads_cat   ON threads(category_id, created_at);
-CREATE INDEX idx_posts_device  ON posts(device_id, created_at);
+categories(id, name, color)          -- want/search/trouble/motetai (seed)
+threads(id, category_id, title, device_id, created_at)  -- = 部屋(room)
+posts(id, thread_id, device_id, audio_url, duration, content, created_at) -- = 声の泡
+search_index + search_index_fts (FTS5, unicode61)       -- トリガ同期
 ```
 
-### FTS5 トリガー（同期）
-```sql
-CREATE TRIGGER search_index_insert AFTER INSERT ON posts BEGIN
-  INSERT INTO search_index(thread_id, post_id, content) VALUES (NEW.thread_id, NEW.id, NEW.content);
-END;
+- `posts.audio_url` は相対パス `/api/audio/{uuid}.png`(同一オリジンプロキシ配信、`docs/deploy.md` §4-1)
+- レート制限: device_id あたり本日 threads+posts 合計 **4 件**
 
-CREATE TRIGGER search_index_delete AFTER DELETE ON posts BEGIN
-  DELETE FROM search_index WHERE post_id = OLD.id;
-END;
-```
-*上記は migration 内で定義*
-
-## API (Hono)
+## API (Hono, 現行パス)
 
 | Method | Path | 説明 |
 |---|---|---|
 | GET | `/api/healthz` | ok |
 | GET | `/api/categories` | カテゴリ一覧 |
-| GET | `/api/threads?category=&q=&limit=50` | Thread 一覧。`q` で FTS5 検索 |
-| POST | `/api/threads` | Thread 作成 `{category_id, title?, device_id}` |
-| GET | `/api/threads/:id/posts` | Post 一覧（時間順） |
-| POST | `/api/threads/:id/posts` | 投稿 `{image_base64, duration, device_id, content?}` |
-| DELETE | `/api/posts/:id?device_id=` | 削除（同 device_id のみ） |
-| GET | `/api/count/:device_id` | 本日の投稿数 + 残りスロット |
+| GET | `/api/threads?category=&q=&limit=50` | 部屋一覧 |
+| POST | `/api/threads` | 部屋作成 |
+| GET | `/api/threads/:id/posts` | 部屋内の声一覧(時間順) |
+| POST | `/api/threads/:id/posts` | 声の投稿 |
+| DELETE | `/api/posts/:id?device_id=` | 声の削除(本人のみ) |
+| GET | `/api/count/:device_id` | 本日残数 |
+| GET | `/api/audio/:key` | R2 PNG を同一オリジンで配信 |
 
-### レート制限
-- device_id あたり **本日スレッド+Post 合計 4件**。
-- 判定: `COUNT(*) FROM (SELECT 1 FROM threads WHERE device_id=? AND created_at>=unixepoch('now','start of day') UNION ALL SELECT 1 FROM posts WHERE device_id=? AND created_at>=unixepoch('now','start of day'))`
-
-### R2 Upload
-- POST body `image_base64` → Buffer.from(base64, 'base64') → `env.BUCKET.put(key, buffer, {httpMetadata: {contentType: 'image/png'}})`
-- public URL: `https://pub-r2.${account}.dev/${key}` （バケット設定による）
+> 将来: `/rooms` へのパス改名を検討(API 互換は既存クライアント次第。`docs/issue.md` に追記)。
 
 ## クライアント音声フロー
 
-### Record → Upload
-1. MediaRecorder (opus/webm) 録音
-2. `decodeAudioData` → WAV + 無音トリム（既存ロジック移植）
-3. `encodeBytesAsPNG(wavBytes)` → base64
-4. 任意: Web Speech API で `content`（テキスト）を生成
-5. POST `/api/threads/:id/posts` (`{image_base64, duration, content?}`)
+### 録音 → 泡が生まれる
+1. MediaRecorder(webm/opus) 録音 → `decodeAudioData` → WAV → 無音トリム
+2. `encodeBytesAsPNG(wav)` → base64
+3. POST `/api/threads/:id/posts` → room の泡一覧に新しい泡が浮かぶ
 
-### Play (Thread モーダル)
-1. `/api/threads/:id/posts` で一覧取得
-2. 各 `audio_url` から PNG fetch
-3. `decodePNGToWav` → AudioBuffer → キュー再生
-4. **Auto Play**: 1件終わったら次を自動再生
+### 触ると喋る(再生)
+1. 泡をタップ → `GET /api/audio/{id}.png`(同一オリジン)
+2. `decodePNGToWav` → AudioBuffer → 再生
+3. 再生中はその泡が「喋っている」表示(色が明るくなる/ふるえる)。終わると静かに戻る。
 
-### decodePNGToWav
-```ts
-async function decodePNGToWav(url: string): Promise<{ buffer: AudioBuffer; duration: number }> {
-  const res = await fetch(url);
-  const blob = await res.blob();
-  const bitmap = await createImageBitmap(blob);
-  const canvas = document.createElement('canvas');
-  canvas.width = bitmap.width;
-  canvas.height = bitmap.height;
-  const ctx = canvas.getContext('2d')!;
-  ctx.drawImage(bitmap, 0, 0);
-  const imgData = ctx.getImageData(0, 0, bitmap.width, bitmap.height);
-  const len = new DataView(imgData.data.buffer).getUint32(0, false);
-  const wavBytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    wavBytes[i] = imgData.data[4 + i];
-  }
-  const audioCtx = new AudioContext();
-  const audioBuf = await audioCtx.decodeAudioData(wavBytes.buffer.slice(0));
-  return { buffer: audioBuf, duration: audioBuf.duration };
-}
-```
-*PNG alpha channel (255) を飛ばし、連続したRGBA配列から先頭4byteを長さ、以降をデータとして復元。*
+---
 
-## UI 仕様
+## UI / UX 詳説
 
-### Top Page (`/`)
-- **背景**: 暗いグラデ（slate-950）
-- **カテゴリタブ**: 上部に横並び（want / search / trouble / motetai）
-- **BubbleField**:
-  - Thread 1件 = シャボン玉（円）。
-  - サイズ: `56 + min(totalDuration/30,1)*104` px
-  - position: absolute, random x/y。CSS `@keyframes float` で上下 + 左右に漂う。
-  - edgeでbounce（JS measurement or CSS contained animation）
-  - カテゴリ color を border / shadow に反映。
-- **Ambient Audio**:
-  - 全 Thread の最新 Post を低音量・低品質で再生（Web Audio PannerNode）。
-  - 画面中央に近いものほど volume up。
-  - 長押し or タップで Thread モーダルオープン + 該当 Post を full volume で再生。
+### 0. 設計原則
+- **即応**: 泡に触れてから声が出るまで 300ms 以内を目標(PNG fetch + decode の事前キャッシュ)
+- **無文字運用を可能に**: 録音・再生・削除はすべて音とジェスチャで完結できる構成
+- **静けさ**: 常時流れるアンビエントは控えめに。明示的な再生を最優先
 
-### Thread Modal (`?thread=xxx`)
-- オーバーレイ: backdrop-blur + dark overlay
-- Thread title + category chip
-- Post Bubble list（縦）：アバターなし声アイコン + 再生状態
-- **Auto Play**: 開いたら先頭から自動再生。完了で次へ。
-- **新規録音**: 下部に長押し Recorder ボタン（既存 UX と同じ）
+### 1. ロビー(トップ `/`)
+- **背景**: 暗いグラデ(slate-950)+ うっすら浮かぶ泡シルエット(装飾)
+- **カテゴリタブ**: 上部に横並び。選択中カテゴリは明色 + アンダーライン。`全部` も選べる
+- **部屋の入り口 (room card)**:
+  - 表示: カテゴリ色の縁取り + タイトル + `声 N` の数 + 最終の声の時刻
+  - レイアウト: 浮遊ではなく「ドア」らしい整列(グリッド)。※旧 bubble ランダム配置は room では廃止
+  - アクション: タップ = 部屋に入る
+- **新規ルーム作成**: 右下 `＋` → カテゴリ選択 → タイトルは**喋って入力**(音声→テキスト、後述 P1)。未実装時はテキスト入力フォールバック
 
-### Recorder Component
-- ボタン: hold to record（長押し中 recording クラス）
-- タイマー + 波形 canvas (Web Audio Analyser)
-- 無音トリム後、バブルプレビュー表示
-- スロット UI: 4 ドット（device_id あたりの本日残数）
+### 2. 部屋ビュー(room, `?room=xxx`)— 声の泡空間
+- 遷移: ロビーから入ると「ドアを開けて部屋に入る」フェード。ブラウザバックでロビーへ
+- **空間**: room 全体が浮遊フィールド(`float` アニメ継続)。高さ 70vh 程度
+- **泡 (voice bubble)**:
+  - 1 声 = 1 泡。サイズ `56 + min(duration/30,1)*104` px(長い声ほど大きい)
+  - 背景はその声の PNG 波形(画像)。カテゴリ色の縁と陰影
+  - 新しい泡は、吹き込んだ位置からゆっくり部屋の中央へ漂って定着
+- **触ると喋る(コアインタラクション)**:
+  1. 泡に触れる(タップ / クリック)
+  2. その泡だけが**フル音量**でその声を再生 = 「喋る」
+  3. 再生中: 泡がわずかに拡大 + 明るい発光。それ以外の泡は暗く沈み、アンビエントは一時停止
+  4. 終了: 泡は通常の漂いに戻る
+  - 連続: 喋っている最中に別の泡へ触れると、前の声は止まり新しい声が喋る(割り込み)
+  - 再生中にもう一度同じ泡へ触れる = 停止
+- **アンビエント(ちょっとずつ聞こえてくる)**:
+  - 部屋の各泡を低音量でループ再生し、空間上の位置(画面中央からの距離)で音量を変調(PannerNode / ゲイン)
+  - デフォルト OFF。room 右上の「アンビエント」トグルで ON
+  - 喋っている泡がある間は自動でフェードアウト
+- **録音(声を吹き込む)**:
+  - 下部中央に「吹き込む」ボタン(泡アイコン)。長押しで録音
+  - 録音中: ボタンが泡の形に膨らみ、波形プレビュー。30 秒で自動停止
+  - 無音すぎ/短すぎはエラー音 + メッセージ(volume_low / too_short)
+  - 成功: 泡がボタン位置から生まれて空間に加わる。本人にだけ「吹き込めた」軽い成功音
+  - 残数: 本日 4 スロットを泡ドットで表示
+- **本人の声の管理**: (設計メモ) 自分の device_id の泡は長押しメニューで「消す」可能。UI 接続は別イシュー(issue N3)
 
-## TTS Seed（サンプル投稿）
-
-1. デプロイ後、ブラウザから `/admin/seed`（簡易パスワード保護）にアクセス
-2. Web Speech API で各カテゴリの seed テキストを合成 → WAV → PNG エンコード
-3. クライアントから `/api/threads` & `/api/threads/:id/posts` にPOSTして保存
-
-Seed テキスト例:
-- want: 「駅前に無料の足湯があるカフェがほしい」
-- search: 「赤い革靴 24.5cm を探しています」
-- trouble: 「隣人のゴミ置き場で困っています」
-- motetai: 「髪型を変えてモテたいです、アドバイスほしい」
-
-## デプロイ構成
-
-### Cloudflare Pages
-- **Build command**: `cd apps/web && next build` （static export）
-- **Output directory**: `apps/web/out` （Next.js static export デフォルトは `out`）。`distDir: 'out'` に設定
-- **Functions directory**: `apps/web/functions`
-- **R2 binding**: `BUCKET`
-- **D1 binding**: `DB`
-
-### wrangler.toml (apps/web)
-```toml
-name = "voice-bbs-web"
-pages_build_output_dir = "out"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "voice-bbs-db"
-database_id = "<your-database-id>"
-
-[[r2_buckets]]
-binding = "BUCKET"
-bucket_name = "voice-bbs-audio"
-```
-
-### 環境変数
-| 変数 | 用途 |
+### 3. モバイル / ジェスチャ整理
+| ジェスチャ | 動作 |
 |---|---|
-| `R2_PUBLIC_URL` | seed script / API response に R2 オブジェクト公開 URL の prefix を組み立てる |
+| 泡タップ | その声が喋る(トグル) |
+| 泡長押し | (P1) 本人なら削除メニュー |
+| 「吹き込む」長押し | 録音(離すと投稿) |
+| スワイプバック / 戻る | ロビーへ |
+| 2 本指タップ | (P1) アンビエント ON/OFF |
 
-## 実装ステップ
-
-1. D1 schema & migration (`wrangler d1 migrations create`)
-2. Hono API scaffold (`functions/api/[[route]].ts`) + R2 upload
-3. Next.js static export config + Tailwind v4 setup
-4. client: `audioCodec.ts` (encode/decode PNG)
-5. client: `useAudioRecorder.ts` (MediaRecorder + trim + encode)
-6. client: `BubbleField.tsx` (float animation + ambient audio)
-7. client: `ThreadModal.tsx` + `useAudioPlayer.ts` (auto play queue)
-8. client: `Recorder.tsx` + rate-limit slots
-9. Seed script (browser console or admin page)
-10. `wrangler pages deploy` or Git 連携
-
-## 無料枠まとめ
-
-| サービス | 無料枠 | 想定使用量 |
+### 4. 状態と遷移
+| 状態 | 画面 | 動作 |
 |---|---|---|
-| Cloudflare Pages | 無制限リクエスト、1ビルド/分 | 問題なし |
-| D1 | 5GB, 25万行読出/日, 5万行書込/日 | 音声メタデータのみで圧倒的に余裕 |
-| R2 | 10GB, 転送無料 | 1分音声=~300KB。1万投稿=3GB |
-| Workers / Pages Functions | 100,000 req/日 | 問題なし |
+| ロビー | room 一覧 | — |
+| 部屋にいる | 泡空間 | 泡が漂う |
+| 喋っている | 泡空間(1 泡発光) | その声のみ再生 |
+| 録音中 | 泡空間(ボタン膨張) | マイク ON。他 UI 無効化 |
+| 読み込み/エラー | 泡空間 | 泡がぼやける/切断トースト(P1) |
+
+### 5. 音響デザイン
+- アンビエント: 各泡の声を -18dB 前後、空間定位で再生(ノイズ感を避けるため最大 3 泡程度に制限)
+- 再生: フル音量、`AudioContext` は初回ユーザー操作で resume(モバイル自動再生対策)
+- エフェクト音: 録音開始/成功/削除などに短い UI トーン(実装時)
+
+### 6. フォールバックと P1
+- room タイトルの音声入力、アンビエント、泡の長押し削除、接続オーバーレイ、マイクチェック → P1(`docs/issue.md` 旧 #7,10,11 ほか)
+
+## 実装ステップ(次の一手)
+
+1. `docs/issue.md` へ本モデル変更を記録(room 改名・泡=声の設計変更)
+2. UI を「ロビー(room カード) + 部屋ビュー(泡タップ再生)」へ変更。既存 API はそのまま利用
+3. 既存データ: thread title + posts を room + 泡としてそのまま表示(データ移行不要)
+4. 以降は P1 機能を issue ベースで消化
