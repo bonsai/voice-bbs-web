@@ -95,7 +95,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="h-full flex flex-col">
+  <div class="flex flex-col">
     <!-- header -->
     <header class="flex items-center gap-3 px-4 py-3 border-b border-slate-800">
       <button class="text-slate-400 hover:text-white text-lg px-1" aria-label="ロビーへ戻る" @click="emit('back')">‹</button>
@@ -118,8 +118,8 @@ onMounted(async () => {
     </p>
     <p v-if="notice" class="px-4 py-2 text-emerald-300 text-sm">{{ notice }}</p>
 
-    <!-- bubble space -->
-    <div class="relative flex-1 overflow-hidden">
+    <!-- bubble space(高さを明示: flex-1 は親の高さ不定で潰れるため固定) -->
+    <div class="relative overflow-hidden mt-2" style="height: min(60vh, 540px)">
       <p v-if="loading" class="text-slate-500 text-sm text-center mt-16">読み込み中…</p>
       <p v-else-if="voices.length === 0" class="text-slate-500 text-sm text-center mt-16">
         まだ声がありません。下のボタンを長押しして吹き込んでみてください
