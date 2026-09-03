@@ -107,12 +107,23 @@ app.post('/threads/:id/posts', async (c) => {
   const pngBuf = Uint8Array.from(atob(body.image_base64), (ch) => ch.charCodeAt(0))
   await c.env.BUCKET.put(key, pngBuf, { httpMetadata: { contentType: 'image/png' } })
 
-  const audio_url = `${c.env.R2_PUBLIC_URL}/${key}`
+  const audio_url = `/api/audio/${id}.png`
   await c.env.DB.prepare(
     `INSERT INTO posts (id, thread_id, device_id, audio_url, duration, content) VALUES (?, ?, ?, ?, ?, ?)`
   ).bind(id, threadId, body.device_id, audio_url, body.duration, body.content ?? null).run()
 
   return c.json({ ok: true, id, url: audio_url, remaining: 4 - ((rate?.cnt ?? 0) + 1) })
+})
+
+// serve stored audio png through same origin (r2.dev has no CORS support)
+app.get('/audio/:key', async (c) => {
+  const key = c.req.param('key')
+  const obj = await c.env.BUCKET.get(`posts/${key}`)
+  if (!obj) return c.json({ ok: false, error: 'not_found' }, 404)
+  const headers = new Headers()
+  headers.set('Content-Type', 'image/png')
+  headers.set('Cache-Control', 'public, max-age=31536000, immutable')
+  return new Response(obj.body, { headers })
 })
 
 // delete post
