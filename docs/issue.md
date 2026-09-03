@@ -10,6 +10,7 @@
 
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
+| N6 | P0 | Next.js → Vue 移行 (ADR-001) | [~] | Vue3+Vite+TS+vitest+Tailwind4。雛形 `apps/web-vue` 作成・vitest 5本緑・build OK。`docs/adr.md` / `docs/dx.md` §7 参照 |
 | N5 | P0 | vitest テスト基盤導入 + CI (GitHub Actions) | [!] | ビルド依存の衝突(N1)がブロッカー。`docs/test.md` 参照 |
 | N4 | P0 | ビルド依存の衝突解消 | [!] | 未使用 `@cloudflare/next-on-pages` × `workers-types@^5` → plain `npm install` が ERESOLVE。→ next-on-pages 削除 or 解決 |
 | N3 | P1 | 投稿者本人削除の UI 化 | [~] | 旧#8。API(`DELETE /api/posts/:id`)実装済み・UI 未接続 |

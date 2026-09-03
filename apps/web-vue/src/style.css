@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+
+/* 暗いグラデ背景 (spec.md v2: ロビー/部屋) */
+html,
+body,
+#app {
+  height: 100%;
+}
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+  margin: 0;
+}
