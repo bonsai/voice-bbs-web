@@ -10,7 +10,11 @@
 
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
-| N8 | P1 | モバイルPWA向け UX/UI 検討(複数パターン×6軸採点) | [ ] | 採点基準策定済み(`docs/ux.md`)。次: パターン案提示→6軸採点→選定→spec反映。PWA対応(manifest/SW)は選定後に |
+| N14 | P1 | iOS の部屋名「声で入力」代替策 | [ ] | iOS Safari は SpeechRecognition 非対応。録音→STT か入力UI主体か要検討 |
+| N13 | P0 | 本番切替 P5 + Next(apps/web)撤去 | [ ] | UX 採点・実機確認後に実行(本番変更のため承認必要)。切替で N4(peer conflict)・N7 も実質解消 |
+| N12 | P0 | PWA 化(manifest/icons/SW・オフライン) + 実機最適化 | [ ] | 採用パターン確定後に着手。セーフエリア・インストール導線含む |
+| N11 | P1 | UX パターン採点・採用確定(A/B/C×6軸) | [ ] | 3案実装済み・preview: https://voice-bbs-web-vue.pages.dev(ロビー右上で切替)。実機検証→`docs/ux.md`採点→採用 |
+| N8 | P1 | モバイルPWA向け UX/UI 検討(複数パターン×6軸採点) | [~] | 採点基準策定済み(`docs/ux.md`)。3パターン(A下部ドック/B文脈タップ/Cスワイプ)実装済み → N11 で採点・確定 |
 | N7 | P0 | Next 実装の音声デコードバグ修正 | [x] | 発見: デコーダが alpha を長さに混入(実録音は再生不能だった)。Vue 側 `pngbytes.ts` で修正実装 + 往復テスト17本緑。既存PNGとは配置互換のため旧データも再生可 |
 | N6 | P0 | Next.js → Vue 移行 (ADR-001) | [~] | P2〜P4 実装済み: audioCodec純関数 + ロビー/部屋UI + 録音/再生。テスト21本緑。preview: https://voice-bbs-web-vue.pages.dev(本番D1/R2接続確認済)。P5切替・P6 CIは未。`docs/plan.md` 参照 |
 | N5 | P0 | vitest テスト基盤導入 + CI (GitHub Actions) | [!] | ビルド依存の衝突(N1)がブロッカー。`docs/test.md` 参照 |
