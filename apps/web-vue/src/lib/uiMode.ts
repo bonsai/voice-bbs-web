@@ -4,8 +4,8 @@ import type { UIMode } from '@/types/uiux'
 const KEY = 'voice_bbs_ui_mode'
 
 function initial(): UIMode {
-  const v = localStorage.getItem(KEY)
-  return v === 'A' || v === 'B' || v === 'C' ? v : 'B'
+  const modes: UIMode[] = ['A', 'B', 'C']
+  return modes[Math.floor(Math.random() * 3)]
 }
 
 export const uiMode = ref<UIMode>(initial())
