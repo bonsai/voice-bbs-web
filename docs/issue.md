@@ -6,6 +6,7 @@
 
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
+| V4 | P0 | Next vs Vue 比較文書(切替判断の根拠) | [x] | `docs/compare-next-vue.md`。ADR-001 根拠の実測化。→ D2 判断材料 |
 | D4 | P1 | 意思決定: PWA 化方針(SW 戦略含む) | [ ] | 選択肢は `docs/decision-options.md` #D4。決定後 ADR-00X 化→ T10 実装 |
 | D3 | P2 | 意思決定: デザイン会議 #2 と泡ガラス化の要否 | [ ] | `docs/decision-options.md` #D3。→ R2 prototype |
 | D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [ ] | `docs/decision-options.md` #D2。承認後 issue 15 実行 |
