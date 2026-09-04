@@ -40,6 +40,13 @@ const cat = computed(() => props.categories.find((c) => c.id === props.roomMeta?
 const color = computed(() => cat.value?.color ?? '#94a3b8')
 const name = computed(() => cat.value?.name ?? (props.roomMeta?.categoryId || 'room'))
 const roomTitle = computed(() => props.roomMeta?.title || '部屋')
+const guideSteps = computed(() =>
+  uiMode.value === 'A'
+    ? ['泡に触れる = その声を聞く(もう一度で停止)', '下のボタンを長押し = 声を吹き込む', '黄色い泡は自分の声(長押しで消せる)']
+    : uiMode.value === 'B'
+      ? ['泡に触れる = その声を聞く', '空きや下の帯を長押し = 声を吹き込む', '黄色い泡は自分の声(長押しで消せる)']
+      : ['泡に触れる = その声を聞く', '下のハンドルを上にスワイプ = 声を吹き込む', '黄色い泡は自分の声(長押しで消せる)'],
+)
 
 // --- 泡レイアウト(voice.id で決定的) ---
 function hashStr(s: string): number {
@@ -70,6 +77,7 @@ const items = computed<Item[]>(() =>
 const isMine = (v: Voice) => v.device_id === myId
 
 // --- 本人削除: 泡長押し(300ms)でメニュー ---
+const showGuide = ref(false)
 const selVoice = ref<Voice | null>(null)
 const deleting = ref(false)
 let lpTimer: ReturnType<typeof setTimeout> | null = null
@@ -217,6 +225,10 @@ onMounted(async () => {
   window.addEventListener('pointermove', onMove, { passive: true })
   window.addEventListener('pointerup', onUp, { passive: true })
   window.addEventListener('pointercancel', onUp, { passive: true })
+  if (!localStorage.getItem('voice_bbs_guide_seen_v1')) {
+    showGuide.value = true
+    localStorage.setItem('voice_bbs_guide_seen_v1', '1')
+  }
   loading.value = true
   try {
     await Promise.all([load(), loadCount()])
@@ -309,6 +321,17 @@ onMounted(async () => {
           </div>
           <div class="text-[11px] text-slate-500">下に戻すとキャンセル / 指を離すと投稿</div>
         </div>
+      </div>
+    </div>
+
+    <!-- 初回ガイド -->
+    <div v-if="showGuide" class="fixed inset-0 z-40 bg-black/70 flex items-center justify-center p-6" @click="showGuide = false">
+      <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-sm space-y-4">
+        <div class="font-bold text-lg">この部屋の使い方</div>
+        <ul class="space-y-2 text-sm text-slate-300">
+          <li v-for="(g, i) in guideSteps" :key="i" class="flex gap-2"><span class="text-emerald-400">・</span>{{ g }}</li>
+        </ul>
+        <button class="w-full py-3 rounded-xl bg-white text-slate-950 text-sm" @click="showGuide = false">わかった</button>
       </div>
     </div>
 
