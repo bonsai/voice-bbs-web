@@ -1,86 +1,39 @@
-# Work Recap — voice-bbs-web (2026-09-04 セッション)
+# Work Recap — voice-bbs-web (2026-09-04 後半・Vue主線/フロント&デザイン)
 
-> 更新: 2026-09-04。リポジトリをクローンし、Vue 移行側のコードを再開。
-
-## 状態(次回の出発点)
-
-- リポジトリ: `/home/bons/repos/voice-bbs-web`
-- P2〜P4 実装済み・テスト21本緑の状態は維持
-- UI/UX 型の一本化: `apps/web-vue/src/types/uiux.ts` (`UIMode` / `ViewState` / `BubbleItem`)
-- **起動アニメーション実装完了**: タイトルフェードイン、泡・カードエントランス、タップ音
-- 未完了: P5 本番切替(承認待ち)、N11 UX採点、N12 PWA
-
-## 今セッションで完了(証拠つき)
-
-| 項目 | 証拠 |
-|---|---||
-| リポジトリ取得 | `git clone https://github.com/bonsai/voice-bbs-web.git repos/voice-bbs-web` |
-| ドキュメント・ソース再読 | `AGENTS.md` / `docs/spec.md` / `docs/ux.md` / `apps/web-vue/src/**` |
-| UI/UX 型 3 つ作成 | `apps/web-vue/src/types/uiux.ts` (`UIMode`, `ViewState`, `BubbleItem`) |
-| 既存ファイルを型に追従 | `App.vue` / `RoomView.vue` / `lib/uiMode.ts` |
-| 起動音效 (sfx.ts) | `apps/web-vue/src/lib/sfx.ts` — `playPop(freq, vol)` |
-| ロビー起動アニメ | `Lobby.vue` — タイトル `animate-title` (0.6s)、泡装飾 16個、カード `animate-card` (stagger) |
-| 部屋泡エントランス | `RoomView.vue` — `animate-bubble-in` (scale 0→1、fade in)、泡タップで `playPop` |
-| CSS アニメーション | `style.css` — `title-in`, `card-in`, `bubble-in` keyframes + `@layer base` |
-| typecheck + test 合格 | 21 passed / build OK |
-| ブロケ解消 | `translate()` → `transform: translate()` に修正(Tailwind v4 / Edge互換) |
-
-コミット履歴:
-- `8fda648` fix(web-vue): use transform instead of translate() for animation compatibility
-- `8d08c19` feat(web-vue): title animation, bubble entrance, tap sound effects
-- `5dedcd1` 再生不具合修正 (前セッション)
-
-## 次の一手(優先順)
-
-1. `npm run typecheck && npm run test` で変更検証 ✅
-2. N11: preview 実機検証 → 6軸採点 → 採用パターン確定
-3. N12: PWA 化(manifest / SW / オフライン)
-4. N13: 本番切替 + Next 撤去(承認後)
-
----
-
-# Work Recap — voice-bbs-web (2026-09-03 セッション)
-
-> 更新: 2026-09-03。次回は冒頭の「状態」から再開。kanban: `docs/kanban.md` / issues: `docs/issue.md`
+> 方針(2026-09-04): **Vue+Vite 主線、Next(web-next)残置・無視、バックエンド共通**。バックエンドは別担当へ委譲(BE1〜7)。
 
 ## 状態(次回の出発点)
 
-- **Vue 移行中(ADR-001 / N6)**: P2〜P4 実装済み・テスト21本緑。**P5 本番切替は未(承認待ち)**
-- UX: 3パターン(A/B/C)実装・preview デプロイ済み。**採点(N11)・採用は未**
-- 本番(Next)は https://voice-bbs-web.pages.dev で稼働継続中
+- フロント: SPA ルーティング(`/room/:id`)・本人削除UI・デザイントークン v1 導入済み。テスト21本緑
+- preview: https://voice-bbs-web-vue.pages.dev(UIモード A/B/C はロビー右上で切替)
+- 判断済み: D2(切替せず並行) / D5(自前トークン) / 会議#2(B主軸・ガイド→T-DS1→PWAの順)
+- 未判断: D1 UX採点(実機)、D3 泡ガラス化、D4 PWA 方針
 
-## 今セッションで完了(証拠つき)
+## 今セッションの完了(証拠)
 
-| 項目 | 証拠 |
+| 項目 | commit |
 |---|---|
-| CF デプロイ(D1/R2/Pages) | https://voice-bbs-web.pages.dev 実API検証済 |
-| 再生不具合修正(同一オリジンプロキシ) | commit `5dedcd1` |
-| ドキュメント基盤一式 | PRD/spec/ADR/issue/kanban/STACK/deploy/test/dx/plan/ux/recap |
-| docs駆動+AGENTS(原理/状況分離) | `AGENTS.md` / `dx.md` |
-| Next デコードバグ発見(N7) | alpha混入で実録音は再生不能。Vue 側で修正済み |
-| Vue 雛形 + audioCodec純関数移植 | P2。vitest 17本→(P3/P4後)21本緑 |
-| ロビー/部屋UI + 録音/再生 | P3/P4。preview https://voice-bbs-web-vue.pages.dev |
-| タッチ3パターン実装 | Aドック/B文脈/Cスワイプ。部屋名を声で入力シート |
-| issue 再編・積み込み | docs/issue.md へ統合(旧 issues/ 廃止) |
-
-直近コミット: `b06eb1c`(issue N11-N14)ほか一連の docs/feat。
+| ドキュメント基盤・issue 再編・比較/計画/委譲/会議群 | docs 多数 |
+| T1 SPA ルーティング(History API + _redirects) | `3539816` |
+| T2 本人の泡 300ms 長押し → 削除シート | `3539816` |
+| D5 デザイントークン v1(Tailwind @theme) | `66ff201` |
+| UI/UX 会議#2 議事録(10分) | 本 recap と同push |
+| Next→Vue 比較・ADR 根拠 | `a426fe2` |
 
 ## ブロッカー・保留
 
-- npm peer conflict(next-on-pages)→ 移行切替(N13)で実質解消見込み
-- P5 本番切替・Next 撤去 → **承認待ち**
-- UX パターン採点 → 実機検証待ち(N11)
-- iOS 部屋名音声入力 → 非対応のため代替要(N14)
+- npm peer conflict(web-next)は残置方針で放置
+- D1 UX 採点は実機検証待ち。会議#2 決定は「B 主軸」
+- バックエンド BE1〜7 は別担当へ渡す準備済み(`docs/backend-handoff.md`)
 
-## 次の一手(優先順)
+## 次の一手(会議#2 の決定順)
 
-1. N11: preview 実機検証 → 6軸採点 → 採用パターン確定
-2. N12: PWA化(manifest/SW)
-3. N13: 本番切替 + Next 撤去(承認後)
-4. N5: CI(GitHub Actions)
+1. 録音ガイド初回モーダル(1枚)
+2. T-DS1: 泡→シートのトークン適用(見た目不変で)
+3. T3: 再生中/自分表示の泡エフェクト仕上げ
+4. D4 後に PWA 化
 
-## 数量メモ
+## 数量
 
-- vitest: 21 passed(typecheck/build OK)
-- トークン実績は未計測(計画見積 `docs/plan.md`: 中央 $2.4)
-- 本番データ: D1/R2 稼働。テストデータは掃除済み
+- vitest 21 passed / typecheck / build OK(JS 88 kB・gzip 34 kB)
+- デザイントークン: semantic color・radius・shadow・motion v1
