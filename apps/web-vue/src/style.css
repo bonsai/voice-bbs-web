@@ -43,6 +43,284 @@ body {
   margin: 0;
 }
 
+/* ============================================
+   5 UI PATTERNS
+   P1: ミニマルボイス | P2: リキッドグラス
+   P3: Clubhouse風 | P4: Neumorphic | P5: ライトボイス
+   ============================================ */
+
+@layer base {
+  /* ===== Pattern 1: ミニマルボイス ===== */
+  /* Daniel Klopfer 風 — グラデ背景 + 白ガラス + 最小限 */
+  body[data-pattern="p1"] {
+    background: linear-gradient(135deg, #a78bfa 0%, #60a5fa 50%, #f9a8d4 100%);
+    color: rgba(0, 0, 0, 0.8);
+  }
+  body[data-pattern="p1"] .card-glass {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  }
+  body[data-pattern="p1"] .card-glass .title {
+    color: rgba(0, 0, 0, 0.8);
+  }
+  body[data-pattern="p1"] .card-glass .sub {
+    color: rgba(0, 0, 0, 0.5);
+  }
+  body[data-pattern="p1"] .tab-active {
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    border-color: transparent;
+  }
+  body[data-pattern="p1"] .mic-btn {
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+  body[data-pattern="p1"] .category-tab {
+    border-color: rgba(0, 0, 0, 0.15);
+    color: rgba(0, 0, 0, 0.5);
+  }
+  body[data-pattern="p1"] .category-tab-active {
+    background: rgba(0, 0, 0, 0.85);
+    color: white;
+    border-color: transparent;
+  }
+  body[data-pattern="p1"] .deco-bubble {
+    background: rgba(255, 255, 255, 0.4);
+    opacity: 0.08;
+  }
+
+  /* ===== Pattern 2: リキッドグラス ===== */
+  /* Dribbble glass 風 — 深紫グラデ + ネオンエッジ + 内側グロー */
+  body[data-pattern="p2"] {
+    background: linear-gradient(160deg, #0d0221 0%, #150935 30%, #12082e 70%, #0a0519 100%);
+  }
+  body[data-pattern="p2"] .card-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 24px;
+    box-shadow:
+      0 12px 40px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.15),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  }
+  body[data-pattern="p2"] .card-glass.accent-purple {
+    border-color: rgba(168, 85, 247, 0.25);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+  body[data-pattern="p2"] .card-glass.accent-cyan {
+    border-color: rgba(6, 182, 212, 0.25);
+    background: linear-gradient(135deg, rgba(6, 182, 212, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+  body[data-pattern="p2"] .card-glass.accent-pink {
+    border-color: rgba(236, 72, 153, 0.25);
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
+  }
+  body[data-pattern="p2"] .card-glass .title {
+    color: rgba(255, 255, 255, 0.95);
+  }
+  body[data-pattern="p2"] .card-glass .sub {
+    color: rgba(255, 255, 255, 0.45);
+  }
+  body[data-pattern="p2"] .tab-active {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: white;
+    border-color: transparent;
+  }
+  body[data-pattern="p2"] .mic-btn {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: white;
+    box-shadow: 0 4px 24px rgba(168, 85, 247, 0.4);
+  }
+  body[data-pattern="p2"] .category-tab {
+    border-color: rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.5);
+  }
+  body[data-pattern="p2"] .category-tab-active {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: white;
+    border-color: transparent;
+  }
+  body[data-pattern="p2"] .deco-bubble {
+    background: #a855f7;
+    opacity: 0.08;
+  }
+  body[data-pattern="p2"]::before {
+    content: '';
+    position: fixed;
+    width: 240px;
+    height: 240px;
+    background: radial-gradient(circle, rgba(168, 85, 247, 0.4) 0%, transparent 70%);
+    top: -80px;
+    right: -60px;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body[data-pattern="p2"]::after {
+    content: '';
+    position: fixed;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.35) 0%, transparent 70%);
+    bottom: -60px;
+    left: -40px;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== Pattern 3: Clubhouse風 ===== */
+  /* Clubhouse redesign 風 — 黒背景 + グリーンアクセント + 中玻璃 */
+  body[data-pattern="p3"] {
+    background: #0a0f14;
+  }
+  body[data-pattern="p3"] .card-glass {
+    background: rgba(255, 255, 255, 0.04);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 18px;
+  }
+  body[data-pattern="p3"] .card-glass:hover {
+    background: rgba(255, 255, 255, 0.07);
+  }
+  body[data-pattern="p3"] .card-glass .title {
+    color: rgba(255, 255, 255, 0.85);
+  }
+  body[data-pattern="p3"] .card-glass .sub {
+    color: rgba(255, 255, 255, 0.35);
+  }
+  body[data-pattern="p3"] .tab-active {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+  }
+  body[data-pattern="p3"] .mic-btn {
+    background: rgba(34, 197, 94, 0.2);
+    border: 1px solid rgba(34, 197, 94, 0.4);
+    color: #4ade80;
+  }
+  body[data-pattern="p3"] .category-tab {
+    border-color: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.4);
+  }
+  body[data-pattern="p3"] .category-tab-active {
+    border-color: #22c55e;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+  }
+  body[data-pattern="p3"] .deco-bubble {
+    background: #22c55e;
+    opacity: 0.04;
+  }
+  body[data-pattern="p3"]::before {
+    content: '';
+    position: fixed;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.06) 0%, transparent 70%);
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    filter: blur(40px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ===== Pattern 4: Neumorphic ===== */
+  /* Neumorphism Mix 風 — グレー背景 + 柔らかい立体感 */
+  body[data-pattern="p4"] {
+    background: #2a2a2e;
+  }
+  body[data-pattern="p4"] .card-glass {
+    background: #2a2a2e;
+    border-radius: 20px;
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.3), -8px -8px 16px rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  body[data-pattern="p4"] .card-glass .title {
+    color: rgba(255, 255, 255, 0.8);
+  }
+  body[data-pattern="p4"] .card-glass .sub {
+    color: rgba(255, 255, 255, 0.35);
+  }
+  body[data-pattern="p4"] .tab-active {
+    background: #2a2a2e;
+    color: #a78bfa;
+    box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+    border-color: transparent;
+  }
+  body[data-pattern="p4"] .mic-btn {
+    background: #2a2a2e;
+    color: white;
+    box-shadow: 6px 6px 12px rgba(0, 0, 0, 0.3), -6px -6px 12px rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+  }
+  body[data-pattern="p4"] .category-tab {
+    background: #2a2a2e;
+    border: none;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.03);
+    color: rgba(255, 255, 255, 0.4);
+  }
+  body[data-pattern="p4"] .category-tab-active {
+    background: #2a2a2e;
+    color: #a78bfa;
+    box-shadow: inset 4px 4px 8px rgba(0, 0, 0, 0.3), inset -4px -4px 8px rgba(255, 255, 255, 0.05);
+    border-color: transparent;
+  }
+  body[data-pattern="p4"] .deco-bubble {
+    background: #2a2a2e;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2), -4px -4px 8px rgba(255, 255, 255, 0.05);
+    opacity: 1;
+  }
+
+  /* ===== Pattern 5: ライトボイス ===== */
+  /* Shoutout Chat 風 — パステルグラデ + 白ベース + シンプル */
+  body[data-pattern="p5"] {
+    background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 25%, #fce7f3 50%, #eff6ff 100%);
+    color: rgba(30, 27, 75, 0.8);
+  }
+  body[data-pattern="p5"] .card-glass {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+  body[data-pattern="p5"] .card-glass .title {
+    color: rgba(30, 27, 75, 0.9);
+  }
+  body[data-pattern="p5"] .card-glass .sub {
+    color: rgba(107, 114, 128, 0.8);
+  }
+  body[data-pattern="p5"] .tab-active {
+    background: #1e1b4b;
+    color: white;
+    border-color: transparent;
+  }
+  body[data-pattern="p5"] .mic-btn {
+    background: #1e1b4b;
+    color: white;
+    box-shadow: 0 4px 16px rgba(30, 27, 75, 0.3);
+  }
+  body[data-pattern="p5"] .category-tab {
+    border-color: rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.4);
+  }
+  body[data-pattern="p5"] .category-tab-active {
+    background: #1e1b4b;
+    color: white;
+    border-color: transparent;
+  }
+  body[data-pattern="p5"] .deco-bubble {
+    background: rgba(167, 139, 250, 0.5);
+    opacity: 0.15;
+  }
+}
+
 /* タイトル — 上から現れる */
 @keyframes title-in {
   0% { opacity: 0; transform: translate(0, -40px); }
@@ -74,5 +352,16 @@ body {
 @layer base {
   .animate-bubble-in {
     animation: bubble-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+}
+
+/* 装飾泡 — float アニメーション */
+@keyframes float {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-15px); }
+}
+@layer base {
+  .animate-float {
+    animation: float 6s ease-in-out infinite alternate;
   }
 }

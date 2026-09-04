@@ -33,6 +33,10 @@ function goBack() {
 }
 
 onMounted(async () => {
+  // 初期 UI パターン (ランダム)
+  const patterns = ['p1', 'p2', 'p3', 'p4', 'p5']
+  document.body.setAttribute('data-pattern', patterns[Math.floor(Math.random() * patterns.length)])
+
   try {
     const { categories: cs } = await api.categories()
     categories.value = cs

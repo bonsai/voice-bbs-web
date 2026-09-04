@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>5パターン比較</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,sans-serif; color:white; }
+  .bg { min-height:100vh; padding:24px; position:relative; overflow:hidden; }
+  .section { max-width:420px; margin:0 auto; position:relative; z-index:1; }
+  h1 { font-size:20px; font-weight:700; margin-bottom:16px; }
+  .tabs { display:flex; gap:6px; margin-bottom:16px; }
+  .tab { padding:5px 14px; border-radius:18px; font-size:12px; border:1px solid rgba(255,255,255,0.2); background:transparent; color:rgba(255,255,255,0.5); }
+  .tab.active { background:white; color:black; border-color:white; }
+  .cards { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:16px; }
+  .card { border-radius:16px; padding:12px; min-height:72px; cursor:pointer; transition:transform 0.15s; }
+  .card:active { transform:scale(0.96); }
+  .card-title { font-size:13px; font-weight:600; margin-bottom:3px; }
+  .card-sub { font-size:10px; color:rgba(255,255,255,0.5); }
+  .bar { position:fixed; bottom:0; left:0; right:0; padding:12px 24px 28px; z-index:10; }
+  .mic { width:52px; height:52px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:22px; margin:0 auto; }
+  .info { margin-top:16px; padding:12px; border-radius:10px; font-size:11px; line-height:1.8; background:rgba(0,0,0,0.3); }
+  .tag { display:inline-block; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:600; }
+
+  /* ===== 1: ミニマルボイス (Daniel Klopfer) ===== */
+  .c1 .bg { background:linear-gradient(135deg,#a78bfa,#60a5fa,#f9a8d4); }
+  .c1 .card { background:rgba(255,255,255,0.2); backdrop-filter:blur(16px); border:1px solid rgba(255,255,255,0.3); border-radius:20px; box-shadow:0 4px 16px rgba(0,0,0,0.1); }
+  .c1 .card-title { color:rgba(0,0,0,0.8); }
+  .c1 .card-sub { color:rgba(0,0,0,0.5); }
+  .c1 .tab { border-color:rgba(0,0,0,0.15); color:rgba(0,0,0,0.5); }
+  .c1 .tab.active { background:rgba(0,0,0,0.85); color:white; border:none; }
+  .c1 .mic { background:rgba(0,0,0,0.8); box-shadow:0 4px 16px rgba(0,0,0,0.3); }
+  .c1 .info { background:rgba(0,0,0,0.15); border:1px solid rgba(0,0,0,0.1); }
+  .c1 .tag { background:rgba(0,0,0,0.1); color:rgba(0,0,0,0.7); }
+
+  /* ===== 2: リキッドグラス (Dribbble glass) ===== */
+  .c2 .bg { background:linear-gradient(160deg,#0d0221,#150935 30%,#12082e 70%,#0a0519); }
+  .c2 .bg::before { content:''; position:absolute; width:240px; height:240px; background:radial-gradient(circle,#a855f7 0%,transparent 70%); top:-80px; right:-60px; filter:blur(60px); opacity:0.4; }
+  .c2 .bg::after { content:''; position:absolute; width:200px; height:200px; background:radial-gradient(circle,#3b82f6 0%,transparent 70%); bottom:-60px; left:-40px; filter:blur(60px); opacity:0.35; }
+  .c2 .card { background:linear-gradient(135deg,rgba(255,255,255,0.1) 0%,rgba(255,255,255,0.03) 100%); backdrop-filter:blur(24px) saturate(180%); border:1px solid rgba(255,255,255,0.15); border-radius:24px; box-shadow:0 12px 40px rgba(0,0,0,0.4),inset 0 1px 0 rgba(255,255,255,0.15); }
+  .c2 .card:nth-child(1) { border-color:rgba(168,85,247,0.25); background:linear-gradient(135deg,rgba(168,85,247,0.12),rgba(255,255,255,0.05)); }
+  .c2 .card:nth-child(2) { border-color:rgba(6,182,212,0.25); background:linear-gradient(135deg,rgba(6,182,212,0.12),rgba(255,255,255,0.05)); }
+  .c2 .card:nth-child(3) { border-color:rgba(236,72,153,0.25); background:linear-gradient(135deg,rgba(236,72,153,0.12),rgba(255,255,255,0.05)); }
+  .c2 .tab.active { background:linear-gradient(135deg,#a855f7,#6366f1); color:white; border:none; }
+  .c2 .mic { background:linear-gradient(135deg,#a855f7,#6366f1); box-shadow:0 4px 24px rgba(168,85,247,0.4); }
+  .c2 .info { background:rgba(255,255,255,0.04); border:1px solid rgba(168,85,247,0.2); }
+  .c2 .tag { background:rgba(168,85,247,0.2); color:#c084fc; }
+
+  /* ===== 3: Clubhouse風 ===== */
+  .c3 .bg { background:#0a0f14; }
+  .c3 .bg::before { content:''; position:absolute; width:300px; height:300px; background:radial-gradient(circle,rgba(34,197,94,0.06) 0%,transparent 70%); top:0; left:50%; transform:translateX(-50%); filter:blur(40px); }
+  .c3 .card { background:rgba(255,255,255,0.04); backdrop-filter:blur(8px); border:1px solid rgba(255,255,255,0.06); border-radius:18px; }
+  .c3 .card:hover { background:rgba(255,255,255,0.07); }
+  .c3 .card-title { color:rgba(255,255,255,0.85); }
+  .c3 .card-sub { color:rgba(255,255,255,0.35); }
+  .c3 .tab { border-color:rgba(255,255,255,0.08); color:rgba(255,255,255,0.4); }
+  .c3 .tab.active { border-color:#22c55e; background:rgba(34,197,94,0.15); color:#4ade80; }
+  .c3 .mic { background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.4); color:#4ade80; }
+  .c3 .info { background:rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.06); }
+  .c3 .tag { background:rgba(34,197,94,0.15); color:#4ade80; }
+
+  /* ===== 4: Neumorphic ===== */
+  .c4 .bg { background:#2a2a2e; }
+  .c4 .card { background:#2a2a2e; border-radius:20px; box-shadow:8px 8px 16px rgba(0,0,0,0.3),-8px -8px 16px rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.04); }
+  .c4 .card-title { color:rgba(255,255,255,0.8); }
+  .c4 .card-sub { color:rgba(255,255,255,0.35); }
+  .c4 .tab { background:#2a2a2e; border:none; box-shadow:4px 4px 8px rgba(0,0,0,0.2),-4px -4px 8px rgba(255,255,255,0.03); color:rgba(255,255,255,0.4); }
+  .c4 .tab.active { background:#2a2a2e; color:#a78bfa; box-shadow:inset 4px 4px 8px rgba(0,0,0,0.3),inset -4px -4px 8px rgba(255,255,255,0.05); }
+  .c4 .mic { background:#2a2a2e; box-shadow:6px 6px 12px rgba(0,0,0,0.3),-6px -6px 12px rgba(255,255,255,0.05); }
+  .c4 .info { background:#2a2a2e; box-shadow:4px 4px 8px rgba(0,0,0,0.2),-4px -4px 8px rgba(255,255,255,0.03); border:none; }
+  .c4 .tag { background:rgba(167,139,250,0.15); color:#a78bfa; }
+
+  /* ===== 5: ライトボイス ===== */
+  .c5 .bg { background:linear-gradient(135deg,#f5f3ff,#ede9fe,#fce7f3,#eff6ff); }
+  .c5 .card { background:white; border-radius:20px; box-shadow:0 2px 12px rgba(0,0,0,0.06); border:1px solid rgba(0,0,0,0.05); }
+  .c5 .card-title { color:#1e1b4b; }
+  .c5 .card-sub { color:#6b7280; }
+  .c5 .tab { border-color:rgba(0,0,0,0.1); color:rgba(0,0,0,0.4); }
+  .c5 .tab.active { background:#1e1b4b; color:white; border:none; }
+  .c5 .mic { background:#1e1b4b; color:white; box-shadow:0 4px 16px rgba(30,27,75,0.3); }
+  .c5 .info { background:rgba(255,255,255,0.6); border:1px solid rgba(0,0,0,0.05); }
+  .c5 .tag { background:rgba(30,27,75,0.1); color:#1e1b4b; }
+
+  /* ===== 比較表 ===== */
+  .comparison { width:100%; border-collapse:collapse; margin-top:12px; font-size:10px; }
+  .comparison th,.comparison td { padding:4px 6px; text-align:left; border-bottom:1px solid rgba(255,255,255,0.06); }
+  .c5 .comparison th,.c5 .comparison td { border-bottom-color:rgba(0,0,0,0.06); }
+
+  .next-section { margin-top:60px; }
+  .section-label { font-size:10px; text-transform:uppercase; letter-spacing:1.5px; color:rgba(255,255,255,0.3); margin-bottom:8px; padding-left:2px; }
+  .c5 .section-label { color:rgba(0,0,0,0.2); }
+</style>
+</head>
+<body>
+
+<!-- ===== 1: ミニマルボイス ===== -->
+<div class="bg c1">
+  <div class="section">
+    <div class="section-label">Pattern 1 — ミニマルボイス</div>
+    <h1>声の部屋</h1>
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-title">ランチの部屋</div><div class="card-sub">日常 · 声 3</div></div>
+      <div class="card"><div class="card-title">朝活ランニング</div><div class="card-sub">日常 · 声 7</div></div>
+      <div class="card"><div class="card-title">ゲーム実況</div><div class="card-sub">趣味 · 声 12</div></div>
+      <div class="card"><div class="card-title">音楽鑑賞</div><div class="card-sub">趣味 · 声 5</div></div>
+    </div>
+    <div class="info">
+      <span class="tag">P1</span> Daniel Klopfer 風
+      <div style="margin-top:6px;">グラデ背景 + 白ガラス + 最小限</div>
+    </div>
+    <div class="next-section">
+      <div class="section-label">比較マトリックス</div>
+      <table class="comparison">
+        <tr><th>軸</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+        <tr><td>奥行き感</td><td>⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐</td></tr>
+        <tr><td>実装容易</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐⭐⭐⭐</td></tr>
+        <tr><td>Voice BBS</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐</td><td>⭐⭐</td></tr>
+        <tr><td>親しみ</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="bar"><div class="mic">🎤</div></div>
+</div>
+
+<!-- ===== 2: リキッドグラス ===== -->
+<div class="bg c2">
+  <div class="section">
+    <div class="section-label">Pattern 2 — リキッドグラス</div>
+    <h1>声の部屋</h1>
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-title">ランチの部屋</div><div class="card-sub">日常 · 声 3</div></div>
+      <div class="card"><div class="card-title">朝活ランニング</div><div class="card-sub">日常 · 声 7</div></div>
+      <div class="card"><div class="card-title">ゲーム実況</div><div class="card-sub">趣味 · 声 12</div></div>
+      <div class="card"><div class="card-title">音楽鑑賞</div><div class="card-sub">趣味 · 声 5</div></div>
+    </div>
+    <div class="info">
+      <span class="tag">P2</span> Dribbble glass 風
+      <div style="margin-top:6px;">深紫グラデ + ネオンエッジ + 内側グロー</div>
+    </div>
+    <div class="next-section">
+      <div class="section-label">比較マトリックス（続き）</div>
+      <table class="comparison">
+        <tr><th>軸</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr>
+        <tr><td>Safari対応</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐⭐⭐</td></tr>
+        <tr><td>実装工数</td><td>0.5日</td><td>1日</td><td>0.5日</td><td>1.5日</td><td>0.5日</td></tr>
+        <tr><td>推薦度</td><td>△</td><td>◎</td><td>○</td><td>×</td><td>△</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="bar"><div class="mic">🎤</div></div>
+</div>
+
+<!-- ===== 3: Clubhouse風 ===== -->
+<div class="bg c3">
+  <div class="section">
+    <div class="section-label">Pattern 3 — Clubhouse風</div>
+    <h1>声の部屋</h1>
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-title">ランチの部屋</div><div class="card-sub">日常 · 声 3</div></div>
+      <div class="card"><div class="card-title">朝活ランニング</div><div class="card-sub">日常 · 声 7</div></div>
+      <div class="card"><div class="card-title">ゲーム実況</div><div class="card-sub">趣味 · 声 12</div></div>
+      <div class="card"><div class="card-title">音楽鑑賞</div><div class="card-sub">趣味 · 声 5</div></div>
+    </div>
+    <div class="info">
+      <span class="tag">P3</span> Clubhouse redesign 風
+      <div style="margin-top:6px;">黒背景 + グリーンアクセント + 中玻璃</div>
+    </div>
+  </div>
+  <div class="bar"><div class="mic">🎤</div></div>
+</div>
+
+<!-- ===== 4: Neumorphic ===== -->
+<div class="bg c4">
+  <div class="section">
+    <div class="section-label">Pattern 4 — Neumorphic</div>
+    <h1>声の部屋</h1>
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-title">ランチの部屋</div><div class="card-sub">日常 · 声 3</div></div>
+      <div class="card"><div class="card-title">朝活ランニング</div><div class="card-sub">日常 · 声 7</div></div>
+      <div class="card"><div class="card-title">ゲーム実況</div><div class="card-sub">趣味 · 声 12</div></div>
+      <div class="card"><div class="card-title">音楽鑑賞</div><div class="card-sub">趣味 · 声 5</div></div>
+    </div>
+    <div class="info">
+      <span class="tag">P4</span> Neumorphism Mix 風
+      <div style="margin-top:6px;">グレー背景 + 柔らかい立体感</div>
+    </div>
+  </div>
+  <div class="bar"><div class="mic">🎤</div></div>
+</div>
+
+<!-- ===== 5: ライトボイス ===== -->
+<div class="bg c5">
+  <div class="section">
+    <div class="section-label">Pattern 5 — ライトボイス</div>
+    <h1>声の部屋</h1>
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-title">ランチの部屋</div><div class="card-sub">日常 · 声 3</div></div>
+      <div class="card"><div class="card-title">朝活ランニング</div><div class="card-sub">日常 · 声 7</div></div>
+      <div class="card"><div class="card-title">ゲーム実況</div><div class="card-sub">趣味 · 声 12</div></div>
+      <div class="card"><div class="card-title">音楽鑑賞</div><div class="card-sub">趣味 · 声 5</div></div>
+    </div>
+    <div class="info">
+      <span class="tag">P5</span> Shoutout Chat 風
+      <div style="margin-top:6px;">パステルグラデ + 白ベース + シンプル</div>
+    </div>
+  </div>
+  <div class="bar"><div class="mic">🎤</div></div>
+</div>
+
+</body>
+</html>

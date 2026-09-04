@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI案 A/B/C 比較</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: white;
+  }
+
+  /* ===== 共通: 背景グラデ ===== */
+  .bg {
+    background: linear-gradient(135deg, #0f0520 0%, #1a0a3e 40%, #0d1b2a 100%);
+    min-height: 100vh;
+    padding: 24px;
+  }
+
+  .section {
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: rgba(255,255,255,0.4);
+    margin-bottom: 12px;
+    padding-left: 4px;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding: 4px;
+  }
+
+  .header h1 {
+    font-size: 22px;
+    font-weight: 700;
+  }
+
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding-left: 4px;
+  }
+
+  .tab {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    cursor: pointer;
+  }
+
+  .tab.active {
+    background: white;
+    color: black;
+    border-color: white;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .card {
+    border-radius: 16px;
+    padding: 14px;
+    min-height: 80px;
+    cursor: pointer;
+    transition: transform 0.15s;
+  }
+
+  .card:active { transform: scale(0.96); }
+  .card-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .card-sub { font-size: 11px; color: rgba(255,255,255,0.5); }
+
+  /* ===== 案A: クラシックグラス ===== */
+  .case-a .card {
+    background: rgba(255,255,255,0.06);
+    backdrop-filter: blur(20px) saturate(150%);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+  }
+
+  .case-a .bg {
+    background: linear-gradient(135deg, #1a0a3e 0%, #0d1b2a 50%, #0a1628 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 背景装飾 */
+  .case-a .bg::before,
+  .case-a .bg::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    opacity: 0.3;
+  }
+
+  .case-a .bg::before {
+    width: 200px; height: 200px;
+    background: #7c3aed;
+    top: -60px; right: -40px;
+  }
+
+  .case-a .bg::after {
+    width: 160px; height: 160px;
+    background: #06b6d4;
+    bottom: -40px; left: -30px;
+  }
+
+  .case-a .tab {
+    border-color: rgba(255,255,255,0.2);
+  }
+
+  .case-a .card-title { color: white; }
+  .case-a .card-sub { color: rgba(255,255,255,0.45); }
+
+  /* ===== 案B: リキッドグラス ===== */
+  .case-b .card {
+    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.03) 100%);
+    backdrop-filter: blur(24px) saturate(180%);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 24px;
+    box-shadow:
+      0 12px 40px rgba(0,0,0,0.4),
+      inset 0 1px 0 rgba(255,255,255,0.15),
+      inset 0 -1px 0 rgba(255,255,255,0.05);
+  }
+
+  .case-b .card:hover {
+    box-shadow:
+      0 16px 48px rgba(0,0,0,0.5),
+      inset 0 1px 0 rgba(255,255,255,0.2),
+      inset 0 -1px 0 rgba(255,255,255,0.08);
+  }
+
+  .case-b .bg {
+    background: linear-gradient(160deg, #0d0221 0%, #150935 30%, #12082e 70%, #0a0519 100%);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .case-b .bg::before {
+    content: '';
+    position: absolute;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, #a855f7 0%, transparent 70%);
+    top: -80px; right: -60px;
+    filter: blur(60px);
+    opacity: 0.4;
+  }
+
+  .case-b .bg::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #3b82f6 0%, transparent 70%);
+    bottom: -60px; left: -40px;
+    filter: blur(60px);
+    opacity: 0.35;
+  }
+
+  .case-b .card-title { color: rgba(255,255,255,0.95); }
+
+  /* アクセントカラー付きカード */
+  .case-b .card.accent-purple {
+    border-color: rgba(168,85,247,0.25);
+    background: linear-gradient(135deg, rgba(168,85,247,0.12) 0%, rgba(255,255,255,0.05) 100%);
+  }
+
+  .case-b .card.accent-cyan {
+    border-color: rgba(6,182,212,0.25);
+    background: linear-gradient(135deg, rgba(6,182,212,0.12) 0%, rgba(255,255,255,0.05) 100%);
+  }
+
+  .case-b .tab.active {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: white;
+    border-color: transparent;
+  }
+
+  /* ===== 案C: ディープグラス ===== */
+  .case-c .card {
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    box-shadow:
+      0 4px 20px rgba(0,0,0,0.5),
+      inset 0 0 0 1px rgba(255,255,255,0.03);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ネオンエッジ */
+  .case-c .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(168,85,247,0.5), transparent);
+  }
+
+  .case-c .card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    box-shadow: inset 0 0 20px rgba(168,85,247,0.05);
+    pointer-events: none;
+  }
+
+  .case-c .card:hover::before {
+    background: linear-gradient(90deg, rgba(6,182,212,0.6), rgba(168,85,247,0.6), transparent);
+  }
+
+  .case-c .bg {
+    background: #050505;
+    position: relative;
+  }
+
+  .case-c .bg::before {
+    content: '';
+    position: absolute;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(168,85,247,0.08) 0%, transparent 70%);
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    filter: blur(40px);
+  }
+
+  .case-c .tab {
+    border-color: rgba(255,255,255,0.08);
+    color: rgba(255,255,255,0.4);
+  }
+
+  .case-c .tab.active {
+    border-color: #a855f7;
+    background: rgba(168,85,247,0.15);
+    color: #c084fc;
+  }
+
+  .case-c .card-title { color: rgba(255,255,255,0.85); }
+  .case-c .card-sub { color: rgba(255,255,255,0.3); }
+
+  /* ===== 泡エリア ===== */
+  .bubble-area {
+    position: relative;
+    height: 200px;
+    margin-top: 20px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .bubble {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.08;
+    animation: float 6s ease-in-out infinite alternate;
+  }
+
+  @keyframes float {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-15px); }
+  }
+
+  .bubble-1 { width: 60px; height: 60px; top: 20%; left: 10%; background: #a855f7; animation-delay: 0s; }
+  .bubble-2 { width: 40px; height: 40px; top: 50%; right: 15%; background: #06b6d4; animation-delay: -2s; }
+  .bubble-3 { width: 80px; height: 80px; bottom: 10%; left: 30%; background: #ec4899; animation-delay: -4s; }
+
+  /* ===== ボトムバー ===== */
+  .bottom-bar {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 24px 32px;
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    z-index: 10;
+  }
+
+  .mic-btn {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+
+  .case-a .mic-btn {
+    background: rgba(255,255,255,0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+
+  .case-b .mic-btn {
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    border: none;
+    box-shadow: 0 4px 24px rgba(168,85,247,0.4);
+  }
+
+  .case-c .mic-btn {
+    background: rgba(168,85,247,0.15);
+    border: 1px solid rgba(168,85,247,0.3);
+    color: #c084fc;
+  }
+
+  /* ===== 区切り ===== */
+  .divider {
+    border-top: 1px solid rgba(255,255,255,0.06);
+    margin: 40px 0;
+  }
+
+  /* ===== 比較表 ===== */
+  .comparison {
+    margin: 24px 0;
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    line-height: 2;
+  }
+
+  .case-a .comparison {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .case-b .comparison {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(168,85,247,0.2);
+  }
+
+  .case-c .comparison {
+    background: rgba(0,0,0,0.6);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+  }
+
+  .tag-a { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); }
+  .tag-b { background: rgba(168,85,247,0.2); color: #c084fc; }
+  .tag-c { background: rgba(6,182,212,0.15); color: #22d3ee; }
+</style>
+</head>
+<body>
+
+<!-- ===== 案A: クラシックグラス ===== -->
+<div class="bg case-a">
+  <div class="section">
+    <div class="header">
+      <h1>声の部屋</h1>
+      <div style="display:flex;gap:4px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;">
+        <button class="tab active">A</button>
+        <button class="tab">B</button>
+        <button class="tab">C</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">ランチの部屋</div>
+        <div class="card-sub">日常 · 声 3</div>
+      </div>
+      <div class="card">
+        <div class="card-title">朝活ランニング</div>
+        <div class="card-sub">日常 · 声 7</div>
+      </div>
+      <div class="card">
+        <div class="card-title">ゲーム実況</div>
+        <div class="card-sub">趣味 · 声 12</div>
+      </div>
+      <div class="card">
+        <div class="card-title">音楽鑑賞</div>
+        <div class="card-sub">趣味 · 声 5</div>
+      </div>
+    </div>
+
+    <div class="bubble-area">
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+    </div>
+
+    <div class="comparison">
+      <span class="tag tag-a">CASE A</span> クラシックグラス
+      <div style="margin-top:8px;">
+        ✓ 最も軽量・高速<br>
+        ✓ 標準的なglassmorphism<br>
+        ✗ 奥行きが浅い
+      </div>
+    </div>
+
+    <div style="height:80px;"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="mic-btn">🎤</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== 案B: リキッドグラス ===== -->
+<div class="bg case-b">
+  <div class="section">
+    <div class="header">
+      <h1>声の部屋</h1>
+      <div style="display:flex;gap:4px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;">
+        <button class="tab">A</button>
+        <button class="tab active">B</button>
+        <button class="tab">C</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+
+    <div class="cards">
+      <div class="card accent-purple">
+        <div class="card-title">ランチの部屋</div>
+        <div class="card-sub">日常 · 声 3</div>
+      </div>
+      <div class="card accent-cyan">
+        <div class="card-title">朝活ランニング</div>
+        <div class="card-sub">日常 · 声 7</div>
+      </div>
+      <div class="card accent-purple">
+        <div class="card-title">ゲーム実況</div>
+        <div class="card-sub">趣味 · 声 12</div>
+      </div>
+      <div class="card accent-cyan">
+        <div class="card-title">音楽鑑賞</div>
+        <div class="card-sub">趣味 · 声 5</div>
+      </div>
+    </div>
+
+    <div class="bubble-area">
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+    </div>
+
+    <div class="comparison">
+      <span class="tag tag-b">CASE B</span> リキッドグラス
+      <div style="margin-top:8px;">
+        ✓ 最深い奥行き・立体感<br>
+        ✓ ネオンエッジで視認性◎<br>
+        ✗ Safariのblurが重い場合あり
+      </div>
+    </div>
+
+    <div style="height:80px;"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="mic-btn">🎤</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- ===== 案C: ディープグラス ===== -->
+<div class="bg case-c">
+  <div class="section">
+    <div class="header">
+      <h1>声の部屋</h1>
+      <div style="display:flex;gap:4px;border-radius:20px;border:1px solid rgba(255,255,255,0.2);overflow:hidden;">
+        <button class="tab">A</button>
+        <button class="tab">B</button>
+        <button class="tab active">C</button>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active">全部</button>
+      <button class="tab">日常</button>
+      <button class="tab">趣味</button>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-title">ランチの部屋</div>
+        <div class="card-sub">日常 · 声 3</div>
+      </div>
+      <div class="card">
+        <div class="card-title">朝活ランニング</div>
+        <div class="card-sub">日常 · 声 7</div>
+      </div>
+      <div class="card">
+        <div class="card-title">ゲーム実況</div>
+        <div class="card-sub">趣味 · 声 12</div>
+      </div>
+      <div class="card">
+        <div class="card-title">音楽鑑賞</div>
+        <div class="card-sub">趣味 · 声 5</div>
+      </div>
+    </div>
+
+    <div class="bubble-area">
+      <div class="bubble bubble-1"></div>
+      <div class="bubble bubble-2"></div>
+      <div class="bubble bubble-3"></div>
+    </div>
+
+    <div class="comparison">
+      <span class="tag tag-c">CASE C</span> ディープグラス
+      <div style="margin-top:8px;">
+        ✓ Clubhouse寄りの重厚感<br>
+        ✓ ネオンエッジでハイライト<br>
+        ✗ ダークすぎて親しみ薄れがち
+      </div>
+    </div>
+
+    <div style="height:80px;"></div>
+  </div>
+
+  <div class="bottom-bar">
+    <div class="mic-btn">🎤</div>
+  </div>
+</div>
+
+</body>
+</html>
