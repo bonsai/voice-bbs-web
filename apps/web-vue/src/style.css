@@ -13,11 +13,13 @@ body {
 
 /* タイトル — 上から現れる */
 @keyframes title-in {
-  0% { opacity: 0; translate: 0 -16px; }
-  100% { opacity: 1; translate: 0 0; }
+  0% { opacity: 0; transform: translate(0, -40px); }
+  100% { opacity: 1; transform: translate(0, 0); }
 }
-.animate-title {
-  animation: title-in 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+@layer base {
+  .animate-title {
+    animation: title-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
 
 /* 部屋カード — 下からバウンド */
@@ -25,16 +27,20 @@ body {
   0% { opacity: 0; transform: scale(0.92) translateY(8px); }
   100% { opacity: 1; transform: scale(1) translateY(0); }
 }
-.animate-card {
-  animation: card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+@layer base {
+  .animate-card {
+    animation: card-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
 }
 
 /* 泡 — 透明度 0→1 + 大きくな */
 @keyframes bubble-in {
-  0% { opacity: 0; transform: translate(-50%,-50%) scale(0); }
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(0); }
   60% { opacity: 1; }
-  100% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
 }
-.animate-bubble-in {
-  animation: bubble-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+@layer base {
+  .animate-bubble-in {
+    animation: bubble-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
 }
