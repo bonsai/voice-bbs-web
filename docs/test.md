@@ -24,7 +24,7 @@
 | React | @testing-library/react(任意・後段) | Hook テスト用 |
 | カバレッジ | v8 provider(後段で導入) | — |
 
-設定ファイル: `apps/web/vitest.config.ts`。`@/` alias(tsconfig paths)を vitest でも解決する。
+設定ファイル: `apps/web-next/vitest.config.ts`。`@/` alias(tsconfig paths)を vitest でも解決する。
 
 ## 4. テスト対象マップ(優先順)
 

@@ -14,7 +14,7 @@
 | リアルタイム | (spec.md では SSE/ポーリング構想) | **未実装** |
 | TTS seed / PWA / 管理者削除 等 | — | 未実装 (`docs/issue.md`) |
 
-### バインディング (`apps/web/wrangler.toml`)
+### バインディング (`apps/web-next/wrangler.toml`)
 - `DB` — D1 `voice-bbs-db`
 - `BUCKET` — R2 `vonsaiapps`
 - `R2_PUBLIC_URL` — 旧方式の残骸で**コード上は未使用**(絶対URL保存を廃止したため)
@@ -47,10 +47,10 @@ GET /api/audio/:key  (Pages Function)
 - `search_index` + `search_index_fts` (FTS5, unicode61) — トリガで同期
 - レート制限: device_id あたり本日 4 件 (threads + posts 合算)
 
-## 3. ディレクトリ構成 (apps/web)
+## 3. ディレクトリ構成 (apps/web-next)
 
 ```
-apps/web/
+apps/web-next/
 ├── src/
 │   ├── app/                 # Next.js App Router (static)
 │   ├── components/          # BubbleField / CategoryTabs / Recorder / ThreadModal

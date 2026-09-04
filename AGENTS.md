@@ -20,7 +20,7 @@
 - **製品モデル v2**: スレッド → **部屋 (room)**。シャボン玉 = **声の泡**(1録音=1泡、**触ると喋る**)。`docs/PRD.md` / `docs/spec.md` v2
 - **ADR-001 実行中**: フロントを Next.js → **Vue 3 + Vite + TS** へ移行(`docs/adr.md`、issue **N6**)。作業計画 = `docs/plan.md`(次は **P2: audioCodec テスト先行移植**)
 - 構成:
-  - `apps/web` — Next.js 実装(現本番稼働、Hono Functions + D1 + R2)
+  - `apps/web-next` — Next.js 実装(現本番稼働、Hono Functions + D1 + R2)
   - `apps/web-vue` — Vue 移行先(**P2〜P4 実装済み**、Hono Functions 同梱)。preview: https://voice-bbs-web-vue.pages.dev / テスト 21本緑
 - **API 境界は不変**: 既存 Hono API・`/api/audio` 同一オリジンプロキシ・DB は移行対象外(Vue 側にも同梱済み)
 - 本番: https://voice-bbs-web.pages.dev(実リソース・罠は `docs/deploy.md`)

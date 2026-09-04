@@ -5,7 +5,7 @@
 
 ## 1. スコープ
 
-- 対象: `apps/web`(Next) → `apps/web-vue`(Vue 3.5 + Vite 8 + TS + Tailwind4 + vitest 5)
+- 対象: `apps/web-next`(Next) → `apps/web-vue`(Vue 3.5 + Vite 8 + TS + Tailwind4 + vitest 5)
 - **API 境界は不変**: Hono Functions / D1 / R2 / `/api/audio` プロキシは触らない(既存アプリは稼働継続)
 - UI は spec.md v2: ロビー(room 一覧) → 部屋(泡空間・触ると喋る・録音)
 - 既存データはそのまま表示(移行・変換不要: room=thread, 泡=post)

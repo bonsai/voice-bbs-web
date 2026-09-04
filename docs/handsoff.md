@@ -1,22 +1,22 @@
 # Voice BBS Web — 手離れ運用ガイド (Hands-off / 人間運用)
 
 > エージェントなしで運用・デプロイするための最短手順。詳細・罠は `docs/deploy.md`。
-> 現状: 本番=Next(`apps/web`)、移行先 Vue(`apps/web-vue`)は preview で並行。切替前のため手順が2系統ある。
+> 現状: 本番=Next(`apps/web-next`)、移行先 Vue(`apps/web-vue`)は preview で並行。切替前のため手順が2系統ある。
 
 ## 1. 前提・秘密
 
-- wrangler は Linux 版を使う(`apps/web/node_modules/.bin/wrangler`)。Windows 側 global は不可
+- wrangler は Linux 版を使う(`apps/web-next/node_modules/.bin/wrangler`)。Windows 側 global は不可
 - 認証: `CLOUDFLARE_API_TOKEN`(権限: Workers Scripts / Pages / D1 / R2 の Edit)
   ```bash
   export CLOUDFLARE_API_TOKEN=xxxxxxxx
-  W=apps/web/node_modules/.bin/wrangler
+  W=apps/web-next/node_modules/.bin/wrangler
   ```
 
 ## 2. よく使うコマンド
 
 ```bash
 # 本番(Next)を再デプロイする場合
-cd apps/web && npm run build
+cd apps/web-next && npm run build
 $W d1 migrations apply voice-bbs-db --remote   # スキーマ変更時のみ
 $W pages deploy out --project-name voice-bbs-web
 

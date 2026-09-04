@@ -11,7 +11,7 @@
 ## 2. デプロイ手順(手動・実測済み)
 
 ```bash
-cd apps/web
+cd apps/web-next
 npm install --legacy-peer-deps   # §4-2 参照(解消されるまで)
 npm run build                    # out/ 生成(static export)
 
@@ -37,7 +37,7 @@ Account: `290e65605de6f2b8a5f61dbfaa36e28c`(Onsen.bonsai@gmail.com's Account)
 | R2 | `vonsaiapps` | S3エンドポイント: `https://290e65605de6f2b8a5f61dbfaa36e28c.r2.cloudflarestorage.com/vonsaiapps` |
 
 初回構築:
-1. `wrangler d1 create voice-bbs-db` → `database_id` を `apps/web/wrangler.toml` に反映
+1. `wrangler d1 create voice-bbs-db` → `database_id` を `apps/web-next/wrangler.toml` に反映
 2. R2 bucket 作成 + `wrangler.toml` の `bucket_name` を実 bucket 名に合わせる(**R2 は bucket リネーム不可**)
 3. migration apply(上記)
 4. Pages project 作成(`wrangler pages project create voice-bbs-web` または Dashboard)

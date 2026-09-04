@@ -1,7 +1,7 @@
 # Next.js vs Vue — 移行判断の根拠資料(実測つき)
 
 > 役割: ADR-001(Next→Vue 移行)の根拠を実測値で補強し、本番切替(D2)判断の材料にする。
-> 測定日: 2026-09-03〜04。ソースは `apps/web`(Next) と `apps/web-vue`(Vue)。
+> 測定日: 2026-09-03〜04。ソースは `apps/web-next`(Next) と `apps/web-vue`(Vue)。
 
 ## 1. プロダクト要件との適合
 

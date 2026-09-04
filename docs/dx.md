@@ -63,7 +63,7 @@
 
 ## 5. DX 環境メモ
 
-- wrangler は `apps/web/node_modules/.bin/wrangler`(Linux)。Windows global は不可(`docs/deploy.md` §4-3)
+- wrangler は `apps/web-next/node_modules/.bin/wrangler`(Linux)。Windows global は不可(`docs/deploy.md` §4-3)
 - npm install は peer conflict 解消まで `--legacy-peer-deps`(N4 / ADR-001 で解消予定)
 - 認証: `CLOUDFLARE_API_TOKEN`(Workers/P pages/D1/R2 Edit)
 - 予定: vitest 導入、GitHub Actions(CI=test系/refactor系) → issue N5
