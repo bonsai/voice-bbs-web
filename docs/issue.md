@@ -6,6 +6,10 @@
 
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
+| D4 | P1 | 意思決定: PWA 化方針(SW 戦略含む) | [ ] | 選択肢は `docs/decision-options.md` #D4。決定後 ADR-00X 化→ T10 実装 |
+| D3 | P2 | 意思決定: デザイン会議 #2 と泡ガラス化の要否 | [ ] | `docs/decision-options.md` #D3。→ R2 prototype |
+| D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [ ] | `docs/decision-options.md` #D2。承認後 issue 15 実行 |
+| D1 | P0 | 意思決定: UX パターン A/B/C の採用 | [ ] | `docs/decision-options.md` #D1。実機6軸検証が根拠。→ spec 反映 |
 | V1 | P0 | Next.js → Vue 移行完了 | [x] | P2〜P4 実装済み。テスト21本緑。ロビー・部屋ビュー・泡タップ再生・録音・起動アニメーション完了 |
 | V2 | P1 | UI モード A/B/C を起動時にランダム選択 | [x] | `uiMode.ts` を変更。リロードごとに A/B/C の其一が選ばれる |
 | V3 | P1 | 起動アニメーション実装 | [x] | タイトル slide-in(0.6s)、泡装飾16個、カードエントランス(stagger)、泡エントランス(scale bounce)、タップ音 |
