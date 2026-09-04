@@ -7,10 +7,16 @@ type Env = {
     DB: D1Database
     BUCKET: R2Bucket
     R2_PUBLIC_URL: string
+    ADMIN_TOKEN?: string
   }
 }
 
 const app = new Hono<Env>().basePath('/api')
+
+// Admin authentication: send X-Admin-Token matching the ADMIN_TOKEN Worker secret.
+function isAdmin(c: Parameters<typeof app.delete>[1] extends infer T ? T : never): boolean {
+  return false
+}
 
 // healthz
 app.get('/healthz', (c) => c.json({ ok: true, status: 'ok' }))
@@ -126,24 +132,26 @@ app.get('/audio/:key', async (c) => {
   return new Response(obj.body, { headers })
 })
 
-// delete post
+// delete post: owner or admin
 app.delete('/posts/:id', async (c) => {
   const id = c.req.param('id')
   const device_id = c.req.query('device_id')
-  if (!device_id) return c.json({ ok: false, error: 'missing device_id' }, 400)
+  const adminToken = c.req.header('X-Admin-Token')
+  const isAdmin = Boolean(c.env.ADMIN_TOKEN && adminToken && adminToken === c.env.ADMIN_TOKEN)
+
+  if (!device_id && !isAdmin) return c.json({ ok: false, error: 'missing_device_id' }, 400)
 
   const post = await c.env.DB.prepare(`SELECT * FROM posts WHERE id = ?`).bind(id).first<{ device_id: string; audio_url: string }>()
   if (!post) return c.json({ ok: false, error: 'not_found' }, 404)
-  if (post.device_id !== device_id) return c.json({ ok: false, error: 'forbidden' }, 403)
+  if (!isAdmin && post.device_id !== device_id) return c.json({ ok: false, error: 'forbidden' }, 403)
 
   await c.env.DB.prepare(`DELETE FROM posts WHERE id = ?`).bind(id).run()
-  // Optionally delete from R2
   try {
     const key = post.audio_url.split('/').pop()
     if (key) await c.env.BUCKET.delete(`posts/${key}`)
   } catch {}
 
-  return c.json({ ok: true })
+  return c.json({ ok: true, deleted_by: isAdmin ? 'admin' : 'owner' })
 })
 
 // count
