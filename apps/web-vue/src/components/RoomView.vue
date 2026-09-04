@@ -8,6 +8,7 @@ import { usePlayer } from '@/composables/usePlayer'
 import { useRecorder, RECORD_MAX_SEC } from '@/composables/useRecorder'
 import { bubbleSizePx } from '@/lib/bubble'
 import { uiMode } from '@/lib/uiMode'
+import { playPop } from '@/lib/sfx'
 
 const props = defineProps<{ room: Room; categories: Category[] }>()
 const emit = defineEmits<{ back: [] }>()
@@ -164,7 +165,8 @@ function onBubbleDown(e: PointerEvent) {
 async function tap(v: Voice) {
   if (recording.value) return
   if (busyId.value === v.id) return
-  await play(v.audio_url, v.id) // 同泡でトグル停止
+  playPop(0.3, 700) // タップ泡の音
+  await play(v.audio_url, v.id)
 }
 
 async function load() {
@@ -235,16 +237,16 @@ function dockDown(e: PointerEvent) {
           {{ uiMode === 'A' ? 'まだ声がありません。下のボタンを長押しして吹き込んでください' : uiMode === 'B' ? 'まだ声がありません。この空間のどこかを長押しして吹き込んでください' : 'まだ声がありません。下のハンドルを上にスワイプして吹き込んでください' }}
         </p>
         <button
-          v-for="it in items" :key="it.id"
-          class="absolute rounded-full overflow-hidden"
-          :class="playingId === it.id ? 'z-10' : ''"
+          v-for="(it, i) in items" :key="it.id"
+          class="absolute rounded-full overflow-hidden animate-bubble-in"
           :style="{
             width: it.size + 'px', height: it.size + 'px',
             left: it.x + '%', top: it.y + '%', transform: 'translate(-50%,-50%)',
             backgroundImage: `url(${it.audio_url})`, backgroundSize: 'cover', backgroundPosition: 'center',
             border: `2px solid ${color}aa`,
             boxShadow: playingId === it.id ? `0 0 44px ${color}` : `inset -12px -12px 24px rgba(0,0,0,0.5), 0 4px 18px ${color}33`,
-            animation: `float ${it.dur}s ease-in-out infinite alternate`, animationDelay: it.delay + 's',
+            animation: `bubble-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, float ${it.dur}s ease-in-out infinite alternate`,
+            animationDelay: `${(i * 0.08) + it.delay}s`,
             transition: 'box-shadow .12s, transform .12s',
           }"
           :aria-label="it.duration.toFixed(1) + '秒の声を聞く'"

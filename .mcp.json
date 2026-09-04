@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "msedge": {
+      "command": "/home/bons/.nvm/versions/node/v24.15.0/bin/node",
+      "args": [
+        "/home/bons/.nvm/versions/node/v24.15.0/lib/node_modules/@playwright/mcp/cli.js",
+        "--browser", "msedge",
+        "--executable-path", "/usr/bin/microsoft-edge"
+      ]
+    }
+  }
+}
