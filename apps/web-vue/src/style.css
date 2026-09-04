@@ -1,5 +1,37 @@
 @import 'tailwindcss';
 
+/* ---- デザイントークン v1 (docs/design-system.md §3) ---- */
+@theme {
+  /* surface */
+  --color-bg: #020617; /* slate-950 */
+  --color-surface: #0f172a; /* slate-900 */
+  --color-surface-2: #1e293b; /* slate-800 */
+  --color-line: #1e293b; /* slate-800 */
+  /* voice */
+  --color-owner: #fbbf24; /* 自分の声の泡 */
+  --color-playing: #ffffff; /* 再生中グロー(カテゴリ色と合成) */
+  --color-cat-want: #ec4899;
+  --color-cat-search: #8b5cf6;
+  --color-cat-trouble: #ef4444;
+  --color-cat-motetai: #f59e0b;
+  --color-cat-none: #94a3b8;
+  /* shape */
+  --radius-bubble: 9999px;
+  --radius-sheet: 1.5rem;
+  --radius-card: 1rem;
+  /* shadow */
+  --shadow-bubble: inset -12px -12px 24px rgba(0, 0, 0, 0.5), 0 4px 18px rgba(0, 0, 0, 0.2);
+  --shadow-bubble-play: 0 0 44px currentColor;
+  /* motion */
+  --animate-float: float 8s ease-in-out infinite alternate;
+  --animate-float-slow: float 12s ease-in-out infinite alternate;
+
+  @keyframes float {
+    0% { translate: 0 0; }
+    100% { translate: 0 -24px; }
+  }
+}
+
 /* 暗いグラデ背景 (spec.md v2: ロビー/部屋) */
 html,
 body,

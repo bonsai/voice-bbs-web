@@ -41,6 +41,7 @@ theme (Tailwind v4 @theme):
 
 ## 4. 決定待ち
 
-- [ ] D5: 導入方針 a/b/c(推奨 a)
+- [x] **D5: a) 自前トークン + Tailwind v4 @theme を採用**(2026-09-04)。トークン v1 を `apps/web-vue/src/style.css` に実装
 - [ ] 泡ガラス化の要否(D3 / R2)
 - [ ] ブランドカラーの確定(現在はカテゴリ色のみ)
+- [ ] 既存コンポーネントのトークン化適用(T-DS1: Bubble/Sheet 等を semantic class へ)
