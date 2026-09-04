@@ -9,12 +9,12 @@
 | V4 | P0 | Next vs Vue 比較文書(切替判断の根拠) | [x] | `docs/compare-next-vue.md`。ADR-001 根拠の実測化。→ D2 判断材料 |
 | D4 | P1 | 意思決定: PWA 化方針(SW 戦略含む) | [ ] | 選択肢は `docs/decision-options.md` #D4。決定後 ADR-00X 化→ T10 実装 |
 | D3 | P2 | 意思決定: デザイン会議 #2 と泡ガラス化の要否 | [ ] | `docs/decision-options.md` #D3。→ R2 prototype |
-| D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [ ] | `docs/decision-options.md` #D2。承認後 issue 15 実行 |
+| D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [x] | 決定: Next 残置・無視、Vue 主線で並行(バック共通)。`docs/decision-options.md` #D2。issue 15 は凍結 |
 | D1 | P0 | 意思決定: UX パターン A/B/C の採用 | [ ] | `docs/decision-options.md` #D1。実機6軸検証が根拠。→ spec 反映 |
 | V1 | P0 | Next.js → Vue 移行完了 | [x] | P2〜P4 実装済み。テスト21本緑。ロビー・部屋ビュー・泡タップ再生・録音・起動アニメーション完了 |
 | V2 | P1 | UI モード A/B/C を起動時にランダム選択 | [x] | `uiMode.ts` を変更。リロードごとに A/B/C の其一が選ばれる |
 | V3 | P1 | 起動アニメーション実装 | [x] | タイトル slide-in(0.6s)、泡装飾16個、カードエントランス(stagger)、泡エントランス(scale bounce)、タップ音 |
-| 15 | P0 | 本番切替: Vue → Next 撤去 | [ ] | UX 採点・実機確認後に実行(承認必要) |
+| 15 | P0 | 本番切替: Vue → Next 撤去 | [~] | 凍結(D2 決定で Next 残置・無視。必要時のみ再開) |
 | 14 | P1 | iOS の部屋名「声で入力」代替策 | [ ] | iOS Safari は SpeechRecognition 非対応 |
 | 13 | P1 | アンビエント再生 (spec §2-「アンビエント」) | [ ] | 各泡を低音量(-18dB)で再生。PannerNode / ゲインで空間定位。デフォルトOFF、右上トグル |
 | 12 | P1 | 泡長押し → 本人削除メニュー | [ ] | 300ms長押しでメニュー表示。`DELETE /api/posts/:id` APIは実装済み |
