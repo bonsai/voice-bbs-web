@@ -1,38 +1,35 @@
+// App — History API による SPA ルーティング: '/' = ロビー, '/room/:id' = 部屋
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { createApi, type Category, type Room } from '@/lib/api'
-import type { ViewState } from '@/types/uiux'
 import Lobby from '@/components/Lobby.vue'
 import RoomView from '@/components/RoomView.vue'
 
 const api = createApi(localStorage)
 const categories = ref<Category[]>([])
 const bootError = ref<string | null>(null)
+const roomId = ref<string | null>(null)
+const roomMeta = new Map<string, { title?: string | null; categoryId?: string }>()
 
-const view = ref<ViewState>({ screen: 'lobby' })
-const roomCache = new Map<string, Room>()
-
-function roomFromQuery(): Room | null {
-  const id = new URLSearchParams(location.search).get('room')
-  if (!id) return null
-  const cached = roomCache.get(id)
-  return cached ? { ...cached } : { id, category_id: '', title: null, device_id: '', created_at: 0 }
+function idFromPath(): string | null {
+  const m = location.pathname.match(/^\/room\/([^/]+)/)
+  return m ? decodeURIComponent(m[1]) : null
+}
+function syncFromPath() {
+  roomId.value = idFromPath()
 }
 
-function syncFromUrl() {
-  const r = roomFromQuery()
-  view.value = r ? { screen: 'room', room: r } : { screen: 'lobby' }
+function openRoom(r: Room) {
+  roomMeta.set(r.id, { title: r.title, categoryId: r.category_id })
+  history.pushState({}, '', `/room/${encodeURIComponent(r.id)}`)
+  roomId.value = r.id
 }
-
-function openRoom(room: Room) {
-  roomCache.set(room.id, { ...room })
-  history.pushState({}, '', `?room=${encodeURIComponent(room.id)}`)
-  view.value = { screen: 'room', room: { ...room } }
-}
-
 function goBack() {
-  history.pushState({}, '', location.pathname)
-  view.value = { screen: 'lobby' }
+  if (history.state || location.pathname !== '/') history.back()
+  else {
+    history.pushState({}, '', '/')
+    roomId.value = null
+  }
 }
 
 onMounted(async () => {
@@ -42,19 +39,21 @@ onMounted(async () => {
   } catch (e) {
     bootError.value = e instanceof Error ? e.message : String(e)
   }
-  syncFromUrl()
-  window.addEventListener('popstate', syncFromUrl)
+  syncFromPath()
+  window.addEventListener('popstate', syncFromPath)
 })
 
-const currentRoom = computed(() => (view.value.screen === 'room' ? view.value.room : null))
+const currentMeta = computed(() => (roomId.value ? roomMeta.get(roomId.value) ?? null : null))
 </script>
 
 <template>
   <div class="min-h-screen">
-    <Lobby v-if="view.screen === 'lobby'" :categories="categories" @open="openRoom" />
+    <Lobby v-if="!roomId" :categories="categories" @open="openRoom" />
     <RoomView
-      v-else-if="currentRoom"
-      :room="currentRoom"
+      v-else
+      :key="roomId"
+      :room-id="roomId"
+      :room-meta="currentMeta"
       :categories="categories"
       @back="goBack"
     />

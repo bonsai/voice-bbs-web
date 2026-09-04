@@ -1,19 +1,21 @@
-// 部屋ビュー — 泡に触れると聞く。録音導線がモードで変わる
-// A: 下部ドック長押し / B: 空き・下部を長押し / C: ハンドルを上スワイプ
+// 部屋ビュー — 泡に触れると聞く。本人の泡は長押しで削除メニュー。録音導線はモードで変わる
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
-import { createApi, type Category, type Room, type Voice } from '@/lib/api'
-import type { BubbleItem } from '@/types/uiux'
+import { createApi, getDeviceId, type Category, type Voice } from '@/lib/api'
 import { usePlayer } from '@/composables/usePlayer'
 import { useRecorder, RECORD_MAX_SEC } from '@/composables/useRecorder'
 import { bubbleSizePx } from '@/lib/bubble'
 import { uiMode } from '@/lib/uiMode'
-import { playPop } from '@/lib/sfx'
 
-const props = defineProps<{ room: Room; categories: Category[] }>()
+const props = defineProps<{
+  roomId: string
+  roomMeta?: { title?: string | null; categoryId?: string } | null
+  categories: Category[]
+}>()
 const emit = defineEmits<{ back: [] }>()
 
 const api = createApi(localStorage)
+const myId = getDeviceId(localStorage)
 const voices = ref<Voice[]>([])
 const loading = ref(true)
 const error = ref<string | null>(null)
@@ -21,11 +23,11 @@ const remaining = ref(4)
 const notice = ref<string | null>(null)
 const canvasRef = ref<HTMLCanvasElement | null>(null)
 const spaceRef = ref<HTMLElement | null>(null)
-const { playingId, busyId, play } = usePlayer()
+const { playingId, play, stop } = usePlayer()
 const { recording, elapsed, error: recError, start: recStart, stop: recStop, cancel: recCancel } =
   useRecorder(canvasRef, async (base64, duration) => {
     try {
-      await api.createVoice(props.room.id, { image_base64: base64, duration })
+      await api.createVoice(props.roomId, { image_base64: base64, duration })
       await Promise.all([load(), loadCount()])
       notice.value = '声を吹き込めました'
       setTimeout(() => (notice.value = null), 2500)
@@ -34,16 +36,25 @@ const { recording, elapsed, error: recError, start: recStart, stop: recStop, can
     }
   })
 
-const color = computed(() => props.categories.find((c) => c.id === props.room.category_id)?.color ?? '#94a3b8')
-const name = computed(() => props.categories.find((c) => c.id === props.room.category_id)?.name ?? props.room.category_id)
+const cat = computed(() => props.categories.find((c) => c.id === props.roomMeta?.categoryId))
+const color = computed(() => cat.value?.color ?? '#94a3b8')
+const name = computed(() => cat.value?.name ?? (props.roomMeta?.categoryId || 'room'))
+const roomTitle = computed(() => props.roomMeta?.title || '部屋')
 
-// --- 泡レイアウト(位置は voice.id で決定的) ---
+// --- 泡レイアウト(voice.id で決定的) ---
 function hashStr(s: string): number {
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
   return h
 }
-const items = computed<BubbleItem[]>(() =>
+interface Item extends Voice {
+  size: number
+  x: number
+  y: number
+  dur: number
+  delay: number
+}
+const items = computed<Item[]>(() =>
   voices.value.map((v) => {
     const h = hashStr(v.id)
     return {
@@ -56,8 +67,57 @@ const items = computed<BubbleItem[]>(() =>
     }
   }),
 )
+const isMine = (v: Voice) => v.device_id === myId
 
-// --- 録音ジェスチャ(空き/下部/ハンドル) ---
+// --- 本人削除: 泡長押し(300ms)でメニュー ---
+const selVoice = ref<Voice | null>(null)
+const deleting = ref(false)
+let lpTimer: ReturnType<typeof setTimeout> | null = null
+let lpSuppress = false
+
+function bubbleDown(e: PointerEvent, v: Voice) {
+  e.stopPropagation() // 空き長押し(録音)と競合しない
+  if (recording.value || !isMine(v)) return
+  lpSuppress = false
+  lpTimer = setTimeout(() => {
+    stop()
+    selVoice.value = v
+    lpSuppress = true
+    navigator.vibrate?.(20)
+  }, 300)
+}
+function bubbleUpCancel() {
+  if (lpTimer) {
+    clearTimeout(lpTimer)
+    lpTimer = null
+  }
+}
+async function tap(v: Voice) {
+  bubbleUpCancel()
+  if (recording.value || lpSuppress) {
+    lpSuppress = false
+    return
+  }
+  await play(v.audio_url, v.id)
+}
+async function doDelete() {
+  const v = selVoice.value
+  if (!v || deleting.value) return
+  deleting.value = true
+  try {
+    await api.deleteVoice(v.id)
+    selVoice.value = null
+    await Promise.all([load(), loadCount()])
+    notice.value = '声を消しました'
+    setTimeout(() => (notice.value = null), 2500)
+  } catch (e) {
+    error.value = e instanceof Error ? e.message : String(e)
+  } finally {
+    deleting.value = false
+  }
+}
+
+// --- 録音ジェスチャ(B: 空き長押し / C: スワイプ) ---
 const ARM_MS = 260
 const arm = ref<{ x: number; y: number } | null>(null)
 let pressId = -1
@@ -72,7 +132,6 @@ function pointOf(e: PointerEvent): { x: number; y: number } {
   const r = spaceRef.value?.getBoundingClientRect()
   return { x: e.clientX - (r?.left ?? 0), y: e.clientY - (r?.top ?? 0) }
 }
-
 function beginArm(e: PointerEvent) {
   if (recording.value || playingId.value || pressId !== -1) return
   pressId = e.pointerId
@@ -88,25 +147,27 @@ function beginArm(e: PointerEvent) {
     void recStart()
   }, ARM_MS)
 }
-
+function clearArm() {
+  arm.value = null
+  gesture = 'none'
+  if (armTimer) {
+    clearTimeout(armTimer)
+    armTimer = null
+  }
+}
 function onMove(e: PointerEvent) {
   if (pressId !== e.pointerId) return
-  const dy = startY !== 0 ? e.clientY - startY : 0
+  const dy = startY ? e.clientY - startY : 0
   const d = Math.hypot(e.clientX - pressX, e.clientY - pressY)
   if (uiMode.value === 'C') {
-    // C: ハンドル上スワイプで開始
     if (gesture === 'none' && dy < -30) {
       gesture = 'swipe'
       swipeOpen.value = true
       void recStart()
-    } else if (gesture === 'swipe' && d > 70) {
+    } else if ((gesture === 'swipe' || gesture === 'armed') && d > 70) {
       recCancel()
       swipeOpen.value = false
-      gesture = 'none'
-    } else if (gesture === 'armed' && d > 60) {
-      // B 用: 移動が大きければキャンセル
       clearArm()
-      recCancel()
     }
     return
   }
@@ -115,35 +176,21 @@ function onMove(e: PointerEvent) {
     recCancel()
   }
 }
-
 function onUp(e: PointerEvent) {
   if (pressId !== e.pointerId) return
   pressId = -1
-  if (armTimer) {
-    clearTimeout(armTimer)
-    armTimer = null
-  }
   if (uiMode.value === 'C') {
-    if (gesture === 'swipe') {
-      gesture = 'none'
-      swipeOpen.value = false
-      if (recording.value) recStop()
-    }
-    gesture = 'none'
+    const wasSwipe = gesture === 'swipe'
+    if (wasSwipe && recording.value) recStop()
+    clearArm()
+    swipeOpen.value = false
     return
   }
   if (gesture === 'armed') {
-    gesture = 'none'
     if (recording.value) recStop()
+    clearArm()
   }
-  clearArm()
 }
-
-function clearArm() {
-  arm.value = null
-  gesture = 'none'
-}
-
 watch(recording, (r) => {
   if (!r) {
     arm.value = null
@@ -152,30 +199,18 @@ watch(recording, (r) => {
   }
 })
 
-function onBubbleDown(e: PointerEvent) {
-  e.stopPropagation()
-  if (armTimer) {
-    clearTimeout(armTimer)
-    armTimer = null
-  }
-  clearArm()
-  pressId = -1
-}
-
-async function tap(v: Voice) {
-  if (recording.value) return
-  if (busyId.value === v.id) return
-  playPop(0.3, 700) // タップ泡の音
-  await play(v.audio_url, v.id)
-}
-
 async function load() {
-  const { posts } = await api.voices(props.room.id)
+  const { posts } = await api.voices(props.roomId)
   voices.value = posts
 }
 async function loadCount() {
   const { remaining: r } = await api.count()
   remaining.value = r
+}
+
+function dockDown() {
+  if (uiMode.value !== 'A' || recording.value) return
+  void recStart()
 }
 
 onMounted(async () => {
@@ -191,16 +226,6 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
-// --- モード別の下部録音 UI ---
-function dockDown(e: PointerEvent) {
-  if (uiMode.value === 'A') {
-    beginArm(e) // A: 押した瞬間に録音
-    if (armTimer) clearTimeout(armTimer)
-    armTimer = null
-    void recStart()
-  }
-}
 </script>
 
 <template>
@@ -208,7 +233,7 @@ function dockDown(e: PointerEvent) {
     <header class="flex items-center gap-3 px-4 py-3 border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-20">
       <button class="text-slate-400 active:text-white text-2xl px-1 min-w-[44px] min-h-[44px]" aria-label="ロビーへ" @click="emit('back')">‹</button>
       <div class="flex-1 min-w-0">
-        <div class="font-semibold truncate">{{ room.title || '無題の部屋' }}</div>
+        <div class="font-semibold truncate">{{ roomTitle }}</div>
         <div class="text-xs" :style="{ color }">{{ name }}・声 {{ voices.length }}</div>
       </div>
       <div class="flex gap-1" title="本日残り投稿枠">
@@ -222,83 +247,57 @@ function dockDown(e: PointerEvent) {
     </p>
     <p v-if="notice" class="px-4 py-2 text-emerald-300 text-sm">{{ notice }}</p>
 
-    <!-- 泡空間(B: 空き長押しで録音 / A・C: タップは聞くのみ) -->
-    <div
-      ref="spaceRef"
-      class="relative overflow-hidden touch-none"
-      style="height: min(58vh, 520px)"
-      :class="uiMode === 'B' ? 'cursor-cell' : ''"
-      @contextmenu.prevent
-      @pointerdown="uiMode === 'B' && beginArm($event)"
-    >
+    <div ref="spaceRef" class="relative overflow-hidden touch-none" style="height: min(58vh, 520px)"
+      :class="uiMode === 'B' ? 'cursor-cell' : ''" @contextmenu.prevent @pointerdown="uiMode === 'B' && beginArm($event)">
       <p v-if="loading" class="text-slate-500 text-sm text-center mt-16">読み込み中…</p>
       <template v-else>
         <p v-if="voices.length === 0" class="text-slate-500 text-sm text-center mt-14 px-6">
           {{ uiMode === 'A' ? 'まだ声がありません。下のボタンを長押しして吹き込んでください' : uiMode === 'B' ? 'まだ声がありません。この空間のどこかを長押しして吹き込んでください' : 'まだ声がありません。下のハンドルを上にスワイプして吹き込んでください' }}
         </p>
         <button
-          v-for="(it, i) in items" :key="it.id"
-          class="absolute rounded-full overflow-hidden animate-bubble-in"
+          v-for="it in items" :key="it.id"
+          class="absolute rounded-full overflow-hidden"
+          :class="[playingId === it.id ? 'z-10' : '', isMine(it) ? '' : '']"
           :style="{
             width: it.size + 'px', height: it.size + 'px',
             left: it.x + '%', top: it.y + '%', transform: 'translate(-50%,-50%)',
             backgroundImage: `url(${it.audio_url})`, backgroundSize: 'cover', backgroundPosition: 'center',
-            border: `2px solid ${color}aa`,
+            border: `2px solid ${it.device_id === myId ? '#fbbf24' : color}aa`,
             boxShadow: playingId === it.id ? `0 0 44px ${color}` : `inset -12px -12px 24px rgba(0,0,0,0.5), 0 4px 18px ${color}33`,
-            animation: `bubble-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) both, float ${it.dur}s ease-in-out infinite alternate`,
-            animationDelay: `${(i * 0.08) + it.delay}s`,
-            transition: 'box-shadow .12s, transform .12s',
+            animation: `float ${it.dur}s ease-in-out infinite alternate`, animationDelay: it.delay + 's',
+            transition: 'box-shadow .12s',
           }"
-          :aria-label="it.duration.toFixed(1) + '秒の声を聞く'"
-          @pointerdown.stop="onBubbleDown"
+          :aria-label="it.duration.toFixed(1) + '秒の声'"
+          @pointerdown="bubbleDown($event, it)"
+          @pointerup="bubbleUpCancel"
+          @pointerleave="bubbleUpCancel"
           @click="tap(it)"
         >
           <span v-if="playingId === it.id" class="absolute inset-0 flex items-center justify-center text-white/90">♪</span>
+          <span v-if="isMine(it)" class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-amber-400/90 text-[8px] leading-none flex items-center justify-center text-black">自</span>
         </button>
-        <!-- B: 録音アームの予告リング -->
-        <div
-          v-if="arm && recording"
-          class="absolute rounded-full pointer-events-none border-2 border-rose-400/80"
-          :style="{
-            left: arm.x + 'px', top: arm.y + 'px',
-            width: 64 + Math.min(elapsed * 14, 120) + 'px',
-            height: 64 + Math.min(elapsed * 14, 120) + 'px',
-            transform: 'translate(-50%,-50%)',
-          }"
-        />
+        <div v-if="arm && recording" class="absolute rounded-full pointer-events-none border-2 border-rose-400/80"
+          :style="{ left: arm.x + 'px', top: arm.y + 'px', width: 64 + Math.min(elapsed * 14, 120) + 'px', height: 64 + Math.min(elapsed * 14, 120) + 'px', transform: 'translate(-50%,-50%)' }" />
       </template>
     </div>
 
-    <!-- 下部: モード別録音導線 -->
+    <!-- 下部: 録音導線(A/B/C) -->
     <div class="border-t border-slate-800 bg-slate-900/80">
-      <!-- 波形(A/B 録音中) -->
       <canvas ref="canvasRef" class="w-full h-10 hidden" :class="recording && uiMode !== 'C' ? '!block' : ''" />
-
-      <!-- A: 中央ドック(長押し=吹き込む) -->
-      <div v-if="uiMode === 'A'" class="flex flex-col items-center py-3 gap-2" @pointerdown="dockDown" @pointerup="recStop" @pointerleave="recording && recCancel()">
-        <div
-          class="w-20 h-20 rounded-full flex items-center justify-center text-center leading-tight text-xs"
-          :class="recording ? 'bg-rose-500 scale-105' : 'bg-white/15'"
-          style="transition: all .1s"
-        >
+      <div v-if="uiMode === 'A'" class="flex flex-col items-center py-3 gap-2">
+        <div class="w-20 h-20 rounded-full flex items-center justify-center text-center leading-tight text-xs"
+          :class="recording ? 'bg-rose-500 scale-105' : 'bg-white/15'" style="transition: all .1s"
+          @pointerdown="dockDown" @pointerup="recStop" @pointerleave="recording && recCancel()">
           {{ recording ? Math.ceil(elapsed) + 's' : '長押しで吹き込む' }}
         </div>
-        <div class="text-[11px] text-slate-500">泡に触れると聞ける・もう一度で停止</div>
+        <div class="text-[11px] text-slate-500">泡に触れると聞く・もう一度で停止 / 黄色い泡は自分の声(長押しで消せる)</div>
       </div>
-
-      <!-- B: 下部全域が録音ゾーン(長押し)。ヒント表示 -->
-      <div
-        class="flex items-center justify-center gap-2 h-16 touch-none"
-        :class="recording ? 'bg-rose-500/15' : ''"
-        @pointerdown="beginArm($event)"
-        @contextmenu.prevent
-      >
+      <div v-if="uiMode === 'B'" class="flex items-center justify-center gap-2 h-16 touch-none"
+        :class="recording ? 'bg-rose-500/15' : ''" @pointerdown="beginArm($event)" @contextmenu.prevent>
         <span class="text-xs" :class="recording ? 'text-rose-200' : 'text-slate-400'">
-          {{ recording ? `吹き込み中… ${Math.ceil(elapsed)}s / ${RECORD_MAX_SEC}s(離すと投稿)` : 'この下の帯・空間の空きを長押し = 吹き込む' }}
+          {{ recording ? `吹き込み中… ${Math.ceil(elapsed)}s / ${RECORD_MAX_SEC}s(離すと投稿)` : '空き・この帯を長押し = 吹き込む。黄色い泡(自分の声)は長押しで消せる' }}
         </span>
       </div>
-
-      <!-- C: ハンドル(上スワイプで録音シート) -->
       <div v-if="uiMode === 'C'" class="relative">
         <div class="flex items-center justify-center h-14 touch-none" @pointerdown="startY = $event.clientY; beginArm($event)">
           <span class="text-xs text-slate-400">長押ししたまま上にスワイプ = 吹き込む</span>
@@ -309,6 +308,19 @@ function dockDown(e: PointerEvent) {
             {{ recording ? Math.ceil(elapsed) + 's' : '…' }}
           </div>
           <div class="text-[11px] text-slate-500">下に戻すとキャンセル / 指を離すと投稿</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 本人削除メニュー -->
+    <div v-if="selVoice" class="fixed inset-0 bg-black/60 z-30 flex items-end" @click="selVoice = null">
+      <div class="w-full bg-slate-900 rounded-t-3xl p-5 space-y-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]" @click.stop>
+        <div class="text-sm text-slate-300">この声を消しますか? <span class="text-slate-500">({{ selVoice.duration.toFixed(1) }}秒・本人のみ削除可)</span></div>
+        <div class="flex gap-2">
+          <button class="flex-1 py-3 rounded-xl bg-rose-500/90 text-white text-sm" :disabled="deleting" @click="doDelete">
+            {{ deleting ? '削除中…' : 'この声を消す' }}
+          </button>
+          <button class="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 text-sm" @click="selVoice = null">キャンセル</button>
         </div>
       </div>
     </div>
