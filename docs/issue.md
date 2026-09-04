@@ -7,6 +7,8 @@
 | # | 優先度 | タイトル | 状態 | 備考 |
 |---|--------|----------|------|------|
 | V4 | P0 | Next vs Vue 比較文書(切替判断の根拠) | [x] | `docs/compare-next-vue.md`。ADR-001 根拠の実測化。→ D2 判断材料 |
+| D5 | P2 | 意思決定: デザインシステム導入方針 | [ ] | 選択肢は `docs/design-system.md` §2(推奨 a: 自前トークン+Tailwind v4)。採用後トークン実装 |
+| BE | P1 | バックエンド委譲(別担当) | [~] | スコープ BE1〜BE7: `docs/backend-handoff.md`。フロント/デザイン主線のため分離管理 |
 | D4 | P1 | 意思決定: PWA 化方針(SW 戦略含む) | [ ] | 選択肢は `docs/decision-options.md` #D4。決定後 ADR-00X 化→ T10 実装 |
 | D3 | P2 | 意思決定: デザイン会議 #2 と泡ガラス化の要否 | [ ] | `docs/decision-options.md` #D3。→ R2 prototype |
 | D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [x] | 決定: Next 残置・無視、Vue 主線で並行(バック共通)。`docs/decision-options.md` #D2。issue 15 は凍結 |
