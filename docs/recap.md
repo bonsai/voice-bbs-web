@@ -6,22 +6,33 @@
 
 - リポジトリ: `/home/bons/repos/voice-bbs-web`
 - P2〜P4 実装済み・テスト21本緑の状態は維持
-- UI/UX 型の一本化を開始: `apps/web-vue/src/types/uiux.ts` を新設
-  - `UIMode` / `ViewState` / `BubbleItem` の 3 型を集約
-- 未完了: P5 本番切替(承認待ち)、UX 採点(N11)、PWA(N12)
+- UI/UX 型の一本化: `apps/web-vue/src/types/uiux.ts` (`UIMode` / `ViewState` / `BubbleItem`)
+- **起動アニメーション実装完了**: タイトルフェードイン、泡・カードエントランス、タップ音
+- 未完了: P5 本番切替(承認待ち)、N11 UX採点、N12 PWA
 
 ## 今セッションで完了(証拠つき)
 
 | 項目 | 証拠 |
-|---|---|
+|---|---||
 | リポジトリ取得 | `git clone https://github.com/bonsai/voice-bbs-web.git repos/voice-bbs-web` |
 | ドキュメント・ソース再読 | `AGENTS.md` / `docs/spec.md` / `docs/ux.md` / `apps/web-vue/src/**` |
 | UI/UX 型 3 つ作成 | `apps/web-vue/src/types/uiux.ts` (`UIMode`, `ViewState`, `BubbleItem`) |
 | 既存ファイルを型に追従 | `App.vue` / `RoomView.vue` / `lib/uiMode.ts` |
+| 起動音效 (sfx.ts) | `apps/web-vue/src/lib/sfx.ts` — `playPop(freq, vol)` |
+| ロビー起動アニメ | `Lobby.vue` — タイトル `animate-title` (0.6s)、泡装飾 16個、カード `animate-card` (stagger) |
+| 部屋泡エントランス | `RoomView.vue` — `animate-bubble-in` (scale 0→1、fade in)、泡タップで `playPop` |
+| CSS アニメーション | `style.css` — `title-in`, `card-in`, `bubble-in` keyframes + `@layer base` |
+| typecheck + test 合格 | 21 passed / build OK |
+| ブロケ解消 | `translate()` → `transform: translate()` に修正(Tailwind v4 / Edge互換) |
+
+コミット履歴:
+- `8fda648` fix(web-vue): use transform instead of translate() for animation compatibility
+- `8d08c19` feat(web-vue): title animation, bubble entrance, tap sound effects
+- `5dedcd1` 再生不具合修正 (前セッション)
 
 ## 次の一手(優先順)
 
-1. `npm run typecheck && npm run test` で変更検証
+1. `npm run typecheck && npm run test` で変更検証 ✅
 2. N11: preview 実機検証 → 6軸採点 → 採用パターン確定
 3. N12: PWA 化(manifest / SW / オフライン)
 4. N13: 本番切替 + Next 撤去(承認後)
