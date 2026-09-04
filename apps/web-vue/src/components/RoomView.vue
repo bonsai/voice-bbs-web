@@ -3,6 +3,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { createApi, type Category, type Room, type Voice } from '@/lib/api'
+import type { BubbleItem } from '@/types/uiux'
 import { usePlayer } from '@/composables/usePlayer'
 import { useRecorder, RECORD_MAX_SEC } from '@/composables/useRecorder'
 import { bubbleSizePx } from '@/lib/bubble'
@@ -41,14 +42,7 @@ function hashStr(s: string): number {
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
   return h
 }
-interface Item extends Voice {
-  size: number
-  x: number
-  y: number
-  dur: number
-  delay: number
-}
-const items = computed<Item[]>(() =>
+const items = computed<BubbleItem[]>(() =>
   voices.value.map((v) => {
     const h = hashStr(v.id)
     return {

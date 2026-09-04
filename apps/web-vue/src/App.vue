@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { createApi, type Category, type Room } from '@/lib/api'
+import type { ViewState } from '@/types/uiux'
 import Lobby from '@/components/Lobby.vue'
 import RoomView from '@/components/RoomView.vue'
 
@@ -8,8 +9,7 @@ const api = createApi(localStorage)
 const categories = ref<Category[]>([])
 const bootError = ref<string | null>(null)
 
-type View = { name: 'lobby' } | { name: 'room'; room: Room }
-const view = ref<View>({ name: 'lobby' })
+const view = ref<ViewState>({ screen: 'lobby' })
 const roomCache = new Map<string, Room>()
 
 function roomFromQuery(): Room | null {
@@ -21,18 +21,18 @@ function roomFromQuery(): Room | null {
 
 function syncFromUrl() {
   const r = roomFromQuery()
-  view.value = r ? { name: 'room', room: r } : { name: 'lobby' }
+  view.value = r ? { screen: 'room', room: r } : { screen: 'lobby' }
 }
 
 function openRoom(room: Room) {
   roomCache.set(room.id, { ...room })
   history.pushState({}, '', `?room=${encodeURIComponent(room.id)}`)
-  view.value = { name: 'room', room: { ...room } }
+  view.value = { screen: 'room', room: { ...room } }
 }
 
 function goBack() {
   history.pushState({}, '', location.pathname)
-  view.value = { name: 'lobby' }
+  view.value = { screen: 'lobby' }
 }
 
 onMounted(async () => {
@@ -46,12 +46,12 @@ onMounted(async () => {
   window.addEventListener('popstate', syncFromUrl)
 })
 
-const currentRoom = computed(() => (view.value.name === 'room' ? view.value.room : null))
+const currentRoom = computed(() => (view.value.screen === 'room' ? view.value.room : null))
 </script>
 
 <template>
   <div class="min-h-screen">
-    <Lobby v-if="view.name === 'lobby'" :categories="categories" @open="openRoom" />
+    <Lobby v-if="view.screen === 'lobby'" :categories="categories" @open="openRoom" />
     <RoomView
       v-else-if="currentRoom"
       :room="currentRoom"

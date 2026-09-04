@@ -1,7 +1,6 @@
 // UI パターン切替 (A/B/C)。localStorage に保持
 import { ref } from 'vue'
-
-export type UIMode = 'A' | 'B' | 'C'
+import type { UIMode } from '@/types/uiux'
 const KEY = 'voice_bbs_ui_mode'
 
 function initial(): UIMode {

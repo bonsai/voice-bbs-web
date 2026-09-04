@@ -1,3 +1,33 @@
+# Work Recap — voice-bbs-web (2026-09-04 セッション)
+
+> 更新: 2026-09-04。リポジトリをクローンし、Vue 移行側のコードを再開。
+
+## 状態(次回の出発点)
+
+- リポジトリ: `/home/bons/repos/voice-bbs-web`
+- P2〜P4 実装済み・テスト21本緑の状態は維持
+- UI/UX 型の一本化を開始: `apps/web-vue/src/types/uiux.ts` を新設
+  - `UIMode` / `ViewState` / `BubbleItem` の 3 型を集約
+- 未完了: P5 本番切替(承認待ち)、UX 採点(N11)、PWA(N12)
+
+## 今セッションで完了(証拠つき)
+
+| 項目 | 証拠 |
+|---|---|
+| リポジトリ取得 | `git clone https://github.com/bonsai/voice-bbs-web.git repos/voice-bbs-web` |
+| ドキュメント・ソース再読 | `AGENTS.md` / `docs/spec.md` / `docs/ux.md` / `apps/web-vue/src/**` |
+| UI/UX 型 3 つ作成 | `apps/web-vue/src/types/uiux.ts` (`UIMode`, `ViewState`, `BubbleItem`) |
+| 既存ファイルを型に追従 | `App.vue` / `RoomView.vue` / `lib/uiMode.ts` |
+
+## 次の一手(優先順)
+
+1. `npm run typecheck && npm run test` で変更検証
+2. N11: preview 実機検証 → 6軸採点 → 採用パターン確定
+3. N12: PWA 化(manifest / SW / オフライン)
+4. N13: 本番切替 + Next 撤去(承認後)
+
+---
+
 # Work Recap — voice-bbs-web (2026-09-03 セッション)
 
 > 更新: 2026-09-03。次回は冒頭の「状態」から再開。kanban: `docs/kanban.md` / issues: `docs/issue.md`
