@@ -15,3 +15,8 @@
 - typecheck/test/build 緑 / commit: 下記
 
 **次のスプリント候補**: T-DS1(トークン適用: 泡→シート)
+
+## 会議(2026-09-04): 設計者 × 実装者
+- 議事録: research/DEV_MEETING_2026-09-04.md
+- Sprint 順の合意: 2=T-DS1(静的 class 化) → 3=録音失敗リトライ → 4=PWA Phase1(manifest/icon/install)
+- D4 は「a: オフライン閲覧のみ」で仮決定(記録)
