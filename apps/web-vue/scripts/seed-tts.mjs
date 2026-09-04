@@ -2,27 +2,19 @@
 /**
  * Seed ~30 Japanese TTS voices into the Cloudflare D1 + R2 backend.
  *
- * Required:
- *   OPENAI_API_KEY=...
- *
- * Optional:
- *   TTS_MODEL=gpt-4o-mini-tts
- *   TTS_VOICE=alloy
- *   THREAD_TITLE=日本語TTSサンプル
- *   DEVICE_ID=seed-tts
- *   CATEGORY_ID=want
+ * Required: OPENAI_API_KEY=...
+ * Optional: TTS_MODEL, TTS_VOICE, THREAD_TITLE, DEVICE_ID, CATEGORY_ID
  *
  * Usage (from apps/web-vue):
  *   node scripts/seed-tts.mjs
  *   node scripts/seed-tts.mjs --remote
  *
  * The app stores WAV bytes inside the RGB PNG envelope used by pngbytes.ts.
- * Wrangler is used for the actual R2/D1 writes, so no Cloudflare API token is
- * embedded in this script.
+ * Wrangler performs the Cloudflare writes; no Cloudflare API token is stored here.
  */
 
 import { execFileSync } from 'node:child_process'
-import { mkdirSync, readFileSync, rmSync } from 'node:fs'
+import { mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { deflateSync } from 'node:zlib'
 import { randomUUID } from 'node:crypto'
@@ -38,35 +30,20 @@ const dbName = 'voice-bbs-db'
 const bucket = 'vonsaiapps'
 
 const samples = [
-  'こんにちは。今日もいい一日になりそうですね。',
-  'おはようございます。ゆっくり始めましょう。',
-  'こんにちは。ここでは声で気軽に話せます。',
-  'こんばんは。今日も一日おつかれさまでした。',
-  'はじめまして。よろしくお願いします。',
-  '元気ですか。私は元気です。',
-  'ちょっと休憩しませんか。',
-  '無理をしないで、自分のペースで進みましょう。',
-  '明日の予定を確認しておきましょう。',
-  '今日は何を食べようかな。',
-  'おすすめのお店があったら教えてください。',
-  'このアイデア、なかなか面白いと思います。',
-  'まずは小さく試してみましょう。',
-  '失敗しても大丈夫。もう一度やってみましょう。',
-  '困ったことがあれば、気軽に声をかけてください。',
-  '探しているものが見つかるといいですね。',
-  'こんなのがあったら便利だと思いませんか。',
-  '今日は少しだけ前に進めました。',
-  '焦らず、一つずつ片づけていきましょう。',
-  '新しいことを始めるのは、いつでも遅くありません。',
-  'いい質問ですね。いっしょに考えてみましょう。',
-  'なるほど、それは興味深いですね。',
-  'その方法なら、かなり簡単にできそうです。',
-  'まず現状を整理してから考えましょう。',
-  'データを見れば、次にやることが見えてきます。',
-  '小さな改善を積み重ねることが大切です。',
-  '今日はここまでにして、続きは明日にしましょう。',
-  'おつかれさまでした。また明日お会いしましょう。',
-  'あなたのアイデアを聞かせてください。',
+  'こんにちは。今日もいい一日になりそうですね。', 'おはようございます。ゆっくり始めましょう。',
+  'こんにちは。ここでは声で気軽に話せます。', 'こんばんは。今日も一日おつかれさまでした。',
+  'はじめまして。よろしくお願いします。', '元気ですか。私は元気です。', 'ちょっと休憩しませんか。',
+  '無理をしないで、自分のペースで進みましょう。', '明日の予定を確認しておきましょう。',
+  '今日は何を食べようかな。', 'おすすめのお店があったら教えてください。',
+  'このアイデア、なかなか面白いと思います。', 'まずは小さく試してみましょう。',
+  '失敗しても大丈夫。もう一度やってみましょう。', '困ったことがあれば、気軽に声をかけてください。',
+  '探しているものが見つかるといいですね。', 'こんなのがあったら便利だと思いませんか。',
+  '今日は少しだけ前に進めました。', '焦らず、一つずつ片づけていきましょう。',
+  '新しいことを始めるのは、いつでも遅くありません。', 'いい質問ですね。いっしょに考えてみましょう。',
+  'なるほど、それは興味深いですね。', 'その方法なら、かなり簡単にできそうです。',
+  'まず現状を整理してから考えましょう。', 'データを見れば、次にやることが見えてきます。',
+  '小さな改善を積み重ねることが大切です。', '今日はここまでにして、続きは明日にしましょう。',
+  'おつかれさまでした。また明日お会いしましょう。', 'あなたのアイデアを聞かせてください。',
   '声を残しておくと、あとから思い出せます。',
 ]
 
@@ -89,7 +66,6 @@ function chunk(type, data) {
 }
 
 function wavToPng(wav) {
-  // Must match packBytesToRgba(): 4-byte BE length + WAV bytes, 3 bytes/pixel.
   const payload = Buffer.alloc(4 + wav.length)
   payload.writeUInt32BE(wav.length, 0)
   wav.copy(payload, 4)
@@ -98,38 +74,24 @@ function wavToPng(wav) {
   const height = Math.ceil(pixels / width)
   const rgba = Buffer.alloc(width * height * 4, 0)
   for (let i = 0; i < width * height; i++) {
-    const src = i * 3
-    const dst = i * 4
+    const src = i * 3, dst = i * 4
     rgba[dst] = src < payload.length ? payload[src] : 0
     rgba[dst + 1] = src + 1 < payload.length ? payload[src + 1] : 0
     rgba[dst + 2] = src + 2 < payload.length ? payload[src + 2] : 0
     rgba[dst + 3] = 255
   }
-  const raw = Buffer.alloc(height * (1 + width * 4))
-  for (let y = 0; y < height; y++) {
-    raw[y * (1 + width * 4)] = 0
-    rgba.copy(raw, y * (1 + width * 4) + 1, y * width * 4, (y + 1) * width * 4)
-  }
+  const stride = 1 + width * 4
+  const raw = Buffer.alloc(height * stride)
+  for (let y = 0; y < height; y++) rgba.copy(raw, y * stride + 1, y * width * 4, (y + 1) * width * 4)
   const ihdr = Buffer.alloc(13)
-  ihdr.writeUInt32BE(width, 0)
-  ihdr.writeUInt32BE(height, 4)
-  ihdr[8] = 8
-  ihdr[9] = 6
-  ihdr[10] = 0
-  ihdr[11] = 0
-  ihdr[12] = 0
-  return Buffer.concat([
-    Buffer.from('\x89PNG\r\n\x1a\n', 'binary'),
-    chunk('IHDR', ihdr),
-    chunk('IDAT', deflateSync(raw)),
-    chunk('IEND', Buffer.alloc(0)),
-  ])
+  ihdr.writeUInt32BE(width, 0); ihdr.writeUInt32BE(height, 4)
+  ihdr[8] = 8; ihdr[9] = 6
+  return Buffer.concat([Buffer.from('\x89PNG\r\n\x1a\n', 'binary'), chunk('IHDR', ihdr), chunk('IDAT', deflateSync(raw)), chunk('IEND', Buffer.alloc(0))])
 }
 
 function durationFromWav(wav) {
   if (wav.length < 44 || wav.toString('ascii', 0, 4) !== 'RIFF') return 1
-  const byteRate = wav.readUInt32LE(28)
-  const dataSize = wav.readUInt32LE(40)
+  const byteRate = wav.readUInt32LE(28), dataSize = wav.readUInt32LE(40)
   return byteRate > 0 ? Number((dataSize / byteRate).toFixed(3)) : 1
 }
 
@@ -145,33 +107,23 @@ async function tts(text) {
   return Buffer.from(await res.arrayBuffer())
 }
 
-function wrangler(args, input) {
-  return execFileSync('pnpm', ['exec', 'wrangler', ...args], {
-    cwd: process.cwd(),
-    input,
-    stdio: ['pipe', 'inherit', 'inherit'],
-    encoding: 'utf8',
-  })
+function wrangler(args) {
+  execFileSync('pnpm', ['exec', 'wrangler', ...args], { cwd: process.cwd(), stdio: 'inherit' })
 }
 
-function sqlEscape(value) {
-  return String(value).replaceAll("'", "''")
-}
+function sqlEscape(value) { return String(value).replaceAll("'", "''") }
 
 async function main() {
   mkdirSync(workDir, { recursive: true })
-  const threadId = randomUUID()
-  const rows = []
-
+  const threadId = randomUUID(), rows = []
   console.log(`Generating ${samples.length} Japanese TTS samples (${MODEL}/${VOICE})...`)
+
   for (let i = 0; i < samples.length; i++) {
     const text = samples[i]
-    process.stdout.write(`${String(i + 1).padStart(2, '0')}/${samples.length} ${text}\n`)
+    console.log(`${String(i + 1).padStart(2, '0')}/${samples.length} ${text}`)
     const wav = await tts(text)
-    const id = randomUUID()
-    const png = wavToPng(wav)
-    const file = join(workDir, `${id}.png`)
-    require('node:fs').writeFileSync(file, png)
+    const id = randomUUID(), file = join(workDir, `${id}.png`)
+    writeFileSync(file, wavToPng(wav))
     rows.push({ id, text, duration: durationFromWav(wav), file })
   }
 
@@ -181,25 +133,17 @@ async function main() {
   ].join('\n')
 
   if (remote) {
-    console.log(`Uploading ${rows.length} PNG voices to R2: ${bucket}`)
-    for (const r of rows) {
-      wrangler(['r2', 'object', 'put', `${bucket}/posts/${r.id}.png`, '--file', r.file, '--remote', '--content-type', 'image/png'])
-    }
-    console.log('Inserting D1 rows...')
+    for (const r of rows) wrangler(['r2', 'object', 'put', `${bucket}/posts/${r.id}.png`, '--file', r.file, '--remote', '--content-type', 'image/png'])
     wrangler(['d1', 'execute', dbName, '--remote', '--command', sql])
   } else {
-    const sqlFile = join(workDir, 'seed.sql')
-    require('node:fs').writeFileSync(sqlFile, sql)
-    console.log(`Generated ${sqlFile}`)
-    console.log('Local mode: PNG files and SQL were generated; no Cloudflare resources were changed.')
-    console.log('Run with --remote to upload to R2 and insert into D1.')
+    writeFileSync(join(workDir, 'seed.sql'), sql)
+    console.log(`Generated ${join(workDir, 'seed.sql')}`)
+    console.log('Local mode: no Cloudflare resources changed. Use --remote to seed D1 + R2.')
+    return
   }
 
   rmSync(workDir, { recursive: true, force: true })
   console.log(`Seed complete: ${rows.length} voices in thread ${threadId}`)
 }
 
-main().catch((err) => {
-  console.error(err instanceof Error ? err.message : err)
-  process.exit(1)
-})
+main().catch((err) => { console.error(err instanceof Error ? err.message : err); process.exit(1) })
