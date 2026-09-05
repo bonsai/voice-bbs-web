@@ -13,6 +13,11 @@ type Env = {
 
 const app = new Hono<Env>().basePath('/api')
 
+// BE2: keep newest MAX_POSTS_PER_THREAD per thread.
+// Pages Functions has no cron trigger, so the cap self-maintains on each POST.
+// Older posts are deleted from both D1 and R2.
+const MAX_POSTS_PER_THREAD = 100
+
 // healthz
 app.get('/healthz', (c) => c.json({ ok: true, status: 'ok' }))
 
@@ -112,6 +117,16 @@ app.post('/threads/:id/posts', async (c) => {
   await c.env.DB.prepare(
     `INSERT INTO posts (id, thread_id, device_id, audio_url, duration, content) VALUES (?, ?, ?, ?, ?, ?)`
   ).bind(id, threadId, body.device_id, audio_url, body.duration, body.content ?? null).run()
+
+  // BE2: cleanup — drop posts beyond the newest MAX_POSTS_PER_THREAD in this thread.
+  const old = await c.env.DB.prepare(
+    `SELECT id, audio_url FROM posts WHERE thread_id = ? ORDER BY created_at DESC LIMIT -1 OFFSET ?`
+  ).bind(threadId, MAX_POSTS_PER_THREAD).all<{ id: string; audio_url: string }>()
+  for (const p of old.results) {
+    await c.env.DB.prepare(`DELETE FROM posts WHERE id = ?`).bind(p.id).run()
+    const key = p.audio_url.split('/').pop()
+    if (key) await c.env.BUCKET.delete(`posts/${key}`)
+  }
 
   return c.json({ ok: true, id, url: audio_url, remaining: 4 - ((rate?.cnt ?? 0) + 1) })
 })
