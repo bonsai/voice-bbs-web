@@ -254,9 +254,14 @@ onMounted(async () => {
     </header>
 
     <p v-if="error" class="px-4 py-2 text-rose-400 text-sm">{{ error }}</p>
-    <p v-if="recError" class="px-4 py-2 text-amber-300 text-sm">
-      {{ recError === 'volume_low' ? '声が小さすぎました' : recError === 'too_short' ? '短すぎます' : recError === 'mic_denied' ? 'マイクを許可してください' : '録音に失敗しました' }}
-    </p>
+    <div v-if="recError" class="mx-4 my-2 px-3 py-2 rounded-xl bg-surface-2/80 flex items-center gap-2 text-sm">
+      <span class="flex-1 text-amber-300">
+        {{ recError === 'volume_low' ? '声が小さすぎました' : recError === 'too_short' ? '短すぎました' : recError === 'mic_denied' ? 'マイクを許可してください(端末の設定からも変更可)' : '録音に失敗しました' }}
+      </span>
+      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="recError = null">
+        もう一度試す
+      </button>
+    </div>
     <p v-if="notice" class="px-4 py-2 text-emerald-300 text-sm">{{ notice }}</p>
 
     <div ref="spaceRef" class="relative overflow-hidden touch-none" style="height: min(58vh, 520px)"

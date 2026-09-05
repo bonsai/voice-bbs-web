@@ -14,7 +14,7 @@
 - モード A/B/C に応じて操作文言を切替
 - typecheck/test/build 緑 / commit: 下記
 
-**次スプリント候補**: 録音失敗リトライ導線(Sprint 3)
+**次スプリント候補**: PWA Phase1(manifest/icon/install UI)(Sprint 4)
 
 ## 会議(2026-09-04): 設計者 × 実装者
 - 議事録: research/DEV_MEETING_2026-09-04.md
@@ -25,3 +25,9 @@
 - 会議: 設計者×実装者(DEV_MEETING)の Sprint 順 1 件目
 - 実装: surface 系をトークンへ(bg-bg/bg-surface/bg-surface-2/border-line)。同一 hex(slate-950/900/800)のため**見た目不変**
 - 検証: test 21 緑 / typecheck / build OK / preview 反映済み → 目視確認は人間
+
+## Sprint 3 (2026-09-04) — 録音失敗リトライ導線
+- 会議: DEV_MEETING の Sprint 順 2 件目
+- 実装: 録音エラー(volume_low/too_short/mic_denied/encode_failed)をバナー化 + 「もう一度試す」ボタンで解除
+- mic_denied は端末設定への案内文を追加
+- 検証: test 21 緑 / typecheck / build OK / preview 反映
