@@ -14,9 +14,14 @@
 - モード A/B/C に応じて操作文言を切替
 - typecheck/test/build 緑 / commit: 下記
 
-**次のスプリント候補**: T-DS1(トークン適用: 泡→シート)
+**次スプリント候補**: 録音失敗リトライ導線(Sprint 3)
 
 ## 会議(2026-09-04): 設計者 × 実装者
 - 議事録: research/DEV_MEETING_2026-09-04.md
 - Sprint 順の合意: 2=T-DS1(静的 class 化) → 3=録音失敗リトライ → 4=PWA Phase1(manifest/icon/install)
 - D4 は「a: オフライン閲覧のみ」で仮決定(記録)
+
+## Sprint 2 (2026-09-04) — T-DS1 トークン適用
+- 会議: 設計者×実装者(DEV_MEETING)の Sprint 順 1 件目
+- 実装: surface 系をトークンへ(bg-bg/bg-surface/bg-surface-2/border-line)。同一 hex(slate-950/900/800)のため**見た目不変**
+- 検証: test 21 緑 / typecheck / build OK / preview 反映済み → 目視確認は人間

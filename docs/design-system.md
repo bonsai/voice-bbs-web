@@ -44,4 +44,4 @@ theme (Tailwind v4 @theme):
 - [x] **D5: a) 自前トークン + Tailwind v4 @theme を採用**(2026-09-04)。トークン v1 を `apps/web-vue/src/style.css` に実装
 - [ ] 泡ガラス化の要否(D3 / R2)
 - [ ] ブランドカラーの確定(現在はカテゴリ色のみ)
-- [ ] 既存コンポーネントのトークン化適用(T-DS1: Bubble/Sheet 等を semantic class へ)
+- [x] 既存コンポーネントのトークン化適用(T-DS1): surface 系(bg/surface/line)を適用済み(Sprint 2)。泡半径・影・動的色は次

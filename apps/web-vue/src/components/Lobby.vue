@@ -130,7 +130,7 @@ onMounted(() => {
     <div class="grid grid-cols-2 gap-3">
       <button
         v-for="(r, i) in rooms" :key="r.id"
-        class="text-left rounded-2xl p-4 border border-slate-800 bg-slate-900/60 active:bg-slate-800 min-h-[92px] animate-card"
+        class="text-left rounded-2xl p-4 border border-line bg-surface/60 active:bg-surface-2 min-h-[92px] animate-card"
         :style="{ animationDelay: (i * 0.06) + 's', boxShadow: `0 0 0 1px ${catOf(r.category_id)?.color ?? '#64748b'}44` }"
         @click="openRoom(r)"
       >

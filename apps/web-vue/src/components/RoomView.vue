@@ -242,7 +242,7 @@ onMounted(async () => {
 
 <template>
   <div class="flex flex-col min-h-screen select-none">
-    <header class="flex items-center gap-3 px-4 py-3 border-b border-slate-800 sticky top-0 bg-slate-950/90 backdrop-blur z-20">
+    <header class="flex items-center gap-3 px-4 py-3 border-b border-line sticky top-0 bg-bg/90 backdrop-blur z-20">
       <button class="text-slate-400 active:text-white text-2xl px-1 min-w-[44px] min-h-[44px]" aria-label="ロビーへ" @click="emit('back')">‹</button>
       <div class="flex-1 min-w-0">
         <div class="font-semibold truncate">{{ roomTitle }}</div>
@@ -294,7 +294,7 @@ onMounted(async () => {
     </div>
 
     <!-- 下部: 録音導線(A/B/C) -->
-    <div class="border-t border-slate-800 bg-slate-900/80">
+    <div class="border-t border-line bg-surface/80">
       <canvas ref="canvasRef" class="w-full h-10 hidden" :class="recording && uiMode !== 'C' ? '!block' : ''" />
       <div v-if="uiMode === 'A'" class="flex flex-col items-center py-3 gap-2">
         <div class="w-20 h-20 rounded-full flex items-center justify-center text-center leading-tight text-xs"
@@ -314,7 +314,7 @@ onMounted(async () => {
         <div class="flex items-center justify-center h-14 touch-none" @pointerdown="startY = $event.clientY; beginArm($event)">
           <span class="text-xs text-slate-400">長押ししたまま上にスワイプ = 吹き込む</span>
         </div>
-        <div v-if="swipeOpen || recording" class="absolute bottom-full left-0 right-0 h-52 bg-slate-900/95 rounded-t-2xl flex flex-col items-center justify-center gap-2 pointer-events-none">
+        <div v-if="swipeOpen || recording" class="absolute bottom-full left-0 right-0 h-52 bg-surface/95 rounded-t-2xl flex flex-col items-center justify-center gap-2 pointer-events-none">
           <div class="text-rose-300 text-sm">{{ recording ? '吹き込み中…' : '準備中' }}</div>
           <div class="w-24 h-24 rounded-full flex items-center justify-center text-rose-100 border-2 border-rose-400/70" :class="recording ? 'animate-pulse bg-rose-500/20' : ''">
             {{ recording ? Math.ceil(elapsed) + 's' : '…' }}
@@ -326,7 +326,7 @@ onMounted(async () => {
 
     <!-- 初回ガイド -->
     <div v-if="showGuide" class="fixed inset-0 z-40 bg-black/70 flex items-center justify-center p-6" @click="showGuide = false">
-      <div class="bg-slate-900 border border-slate-700 rounded-3xl p-6 w-full max-w-sm space-y-4">
+      <div class="bg-surface border border-slate-700 rounded-3xl p-6 w-full max-w-sm space-y-4">
         <div class="font-bold text-lg">この部屋の使い方</div>
         <ul class="space-y-2 text-sm text-slate-300">
           <li v-for="(g, i) in guideSteps" :key="i" class="flex gap-2"><span class="text-emerald-400">・</span>{{ g }}</li>
@@ -337,13 +337,13 @@ onMounted(async () => {
 
     <!-- 本人削除メニュー -->
     <div v-if="selVoice" class="fixed inset-0 bg-black/60 z-30 flex items-end" @click="selVoice = null">
-      <div class="w-full bg-slate-900 rounded-t-3xl p-5 space-y-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]" @click.stop>
+      <div class="w-full bg-surface rounded-t-3xl p-5 space-y-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]" @click.stop>
         <div class="text-sm text-slate-300">この声を消しますか? <span class="text-slate-500">({{ selVoice.duration.toFixed(1) }}秒・本人のみ削除可)</span></div>
         <div class="flex gap-2">
           <button class="flex-1 py-3 rounded-xl bg-rose-500/90 text-white text-sm" :disabled="deleting" @click="doDelete">
             {{ deleting ? '削除中…' : 'この声を消す' }}
           </button>
-          <button class="flex-1 py-3 rounded-xl bg-slate-800 text-slate-300 text-sm" @click="selVoice = null">キャンセル</button>
+          <button class="flex-1 py-3 rounded-xl bg-surface-2 text-slate-300 text-sm" @click="selVoice = null">キャンセル</button>
         </div>
       </div>
     </div>

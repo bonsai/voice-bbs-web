@@ -37,7 +37,7 @@ async function submit() {
 
 <template>
   <div class="fixed inset-0 bg-black/60 flex items-end sm:items-center justify-center" @click.self="emit('close')">
-    <form class="bg-slate-900 rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]" @submit.prevent="submit">
+    <form class="bg-surface rounded-t-3xl sm:rounded-3xl p-6 w-full max-w-md space-y-4 pb-[max(1.5rem,env(safe-area-inset-bottom))]" @submit.prevent="submit">
       <div class="flex items-center justify-between">
         <div class="text-sm" :style="{ color: categoryColor }">{{ categoryName }} の新しい部屋</div>
         <button type="button" class="text-slate-400 text-xl px-2" aria-label="閉じる" @click="emit('close')">×</button>
@@ -60,7 +60,7 @@ async function submit() {
 
       <input
         v-model="title" maxlength="40" placeholder="部屋の名前(声で言うか、ここに入力。空でも可)"
-        class="w-full bg-slate-800 rounded-xl px-4 py-3 text-sm outline-none"
+        class="w-full bg-surface-2 rounded-xl px-4 py-3 text-sm outline-none"
       />
       <div class="flex justify-end gap-2">
         <button type="button" class="px-4 py-2 text-sm text-slate-400" @click="emit('close')">キャンセル</button>
