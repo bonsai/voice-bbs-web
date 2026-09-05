@@ -9,7 +9,7 @@
 | V4 | P0 | Next vs Vue 比較文書(切替判断の根拠) | [x] | `docs/compare-next-vue.md`。ADR-001 根拠の実測化。→ D2 判断材料 |
 | T-DS1 | デザイントークンの既存コンポーネント適用(Bubble/Sheet/Card 等) | [ ] | トークン v1 済み。semantic class 化は別途 |
 | D5 | P2 | 意思決定: デザインシステム導入方針 | [x] | 採用 a: 自前トークン+Tailwind v4 @theme。トークン v1 実装済み(`style.css`)。適用は T-DS1 |
-| BE | P1 | バックエンド委譲(別担当) | [~] | 割当: **木村拓哉(kimura)** 2026-09-05。スコープ BE1〜BE7(`docs/backend-handoff.md`)。BE1 着手 |
+| BE | P1 | バックエンド委譲(別担当) | [~] | 割当: **木村拓哉(kimura)** 2026-09-05。BE2実装/検証済・BE7同期確認済・BE6確定。BE1は認証待ち(`docs/backend-handoff.md`) |
 | D4 | P1 | 意思決定: PWA 化方針(SW 戦略含む) | [ ] | 選択肢は `docs/decision-options.md` #D4。決定後 ADR-00X 化→ T10 実装 |
 | D3 | P2 | 意思決定: デザイン会議 #2 と泡ガラス化の要否 | [ ] | `docs/decision-options.md` #D3。→ R2 prototype |
 | D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [x] | 決定: Next 残置・無視、Vue 主線で並行(バック共通)。`docs/decision-options.md` #D2。issue 15 は凍結 |
@@ -23,8 +23,8 @@
 | 12 | P1 | 泡長押し → 本人削除メニュー | [ ] | 300ms長押しでメニュー表示。`DELETE /api/posts/:id` APIは実装済み |
 | 11 | P1 | 接続状態オーバーレイ | [ ] | 切断時グレースケール。手段は Realtime/ポーリング要検討 |
 | 10 | P1 | ランディング マイクチェック | [ ] | オンボーディング。`getUserMedia` の許可フロー |
-| 9 | P1 | 古い投稿自動クリーンアップ | [ ] | cron or 投稿時 n 件保持 |
-| 8 | P1 | TTS seed | [ ] | Web Speech API。テキスト seed 済みだが音声合成サンプルは別途 |
+| 9 | P1 | 古い投稿自動クリーンアップ | [~] | 投稿時 n件保持(スレッド別100件/BE2)実装・ローカル検証済。全体TTL削除は未実装(cron不可・投稿時方式) |
+| 8 | P1 | TTS seed | [~] | OpenAI TTS 30サンプル `scripts/seed-tts.mjs --remote`(BE3)。実行は `OPENAI_API_KEY` + wrangler認証 |
 | 7 | P1 | PWA (manifest / SW / offline) | [ ] | セーフエリア・インストール導線含む |
 | 6 | P2 | 部屋タイトルの音声入力 (STT) | [ ] | `SpeechRecognition`。iOS fallback 要設計 |
 | 5 | P2 | アンビエント音量の空間定位 | [ ] | 画面中央からの距離でゲイン変調。泡の座標 (x%, y%) から算出 |
@@ -41,7 +41,7 @@
 
 | # | タイトル | 状態 | 備考 |
 |---|----------|------|------|
-| 6 | TTS サンプル seed | [ ] | Web Speech API。テキストseed済み |
+| 6 | TTS サンプル seed | [~] | `scripts/seed-tts.mjs`(OpenAI TTS 30)。実行は要認証+KEY |
 | 5 | PNGデコード & 自動連続再生プレイヤー | [x] | プロキシ配信(N1)に適合済み |
 | 4 | Thread / Post API + R2 upload | [x] | 匿名・レート制限(4件/日/device) |
 | 3 | 音声録音 Hook (無音トリム・PNG encode) | [x] | useAudioRecorder |
@@ -55,7 +55,7 @@
 | 12 | DB テキスト検索 | [~] | API LIKE + FTS5(unicode61)整備済み。UI利用は要確認 |
 | 11 | ランディング マイクチェック | [ ] | オンボーディング |
 | 10 | 接続状態オーバーレイ | [ ] | 切断時グレースケール |
-| 9 | 古い投稿自動クリーンアップ | [ ] | cron or 投稿時 n 件保持 |
+| 9 | 古い投稿自動クリーンアップ | [~] | 投稿時 n件保持(スレッド別100)実装済。cron TTL は未実装 |
 | 8 | 投稿者本人削除 | [~] | API実装済み・UI未接続 (→ V3#12) |
 | 7 | PWA (manifest / SW / offline) | [ ] | — |
 
