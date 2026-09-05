@@ -16,6 +16,30 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const sheet = ref(false)
 
+// --- PWA インストール導線(Phase1) ---
+interface BeforeInstallPromptEvent extends Event {
+  prompt(): Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
+}
+const canInstall = ref(false)
+let installEvt: BeforeInstallPromptEvent | null = null
+function isStandalone() {
+  return window.matchMedia('(display-mode: standalone)').matches
+}
+function onInstallPrompt(e: Event) {
+  e.preventDefault()
+  if (isStandalone()) return
+  installEvt = e as BeforeInstallPromptEvent
+  canInstall.value = true
+}
+window.addEventListener('beforeinstallprompt', onInstallPrompt)
+async function install() {
+  if (!installEvt) return
+  await installEvt.prompt()
+  installEvt = null
+  canInstall.value = false
+}
+
 // 装飾泡 (16 個: 4×4)
 const decoBubbles = Array.from({ length: 16 }, (_, i) => {
   const h = i * 7 + 13
@@ -108,6 +132,11 @@ onMounted(() => {
           animation: `float ${b.dur}s ease-in-out infinite alternate`, animationDelay: b.delay + 's',
         }"
       />
+    </div>
+
+    <div v-if="canInstall" class="mb-3 flex items-center gap-2 bg-surface-2/80 rounded-xl px-3 py-2">
+      <span class="flex-1 text-xs text-slate-300">ホーム画面に追加すると全画面で使えます</span>
+      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="install">インストール</button>
     </div>
 
     <div class="flex gap-2 flex-wrap mb-4">

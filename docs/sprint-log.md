@@ -14,7 +14,7 @@
 - モード A/B/C に応じて操作文言を切替
 - typecheck/test/build 緑 / commit: 下記
 
-**次スプリント候補**: PWA Phase1(manifest/icon/install UI)(Sprint 4)
+**次スプリント候補**: PWA Phase2(SW・オフライン閲覧)は D4 正式化後
 
 ## 会議(2026-09-04): 設計者 × 実装者
 - 議事録: research/DEV_MEETING_2026-09-04.md
@@ -31,3 +31,8 @@
 - 実装: 録音エラー(volume_low/too_short/mic_denied/encode_failed)をバナー化 + 「もう一度試す」ボタンで解除
 - mic_denied は端末設定への案内文を追加
 - 検証: test 21 緑 / typecheck / build OK / preview 反映
+
+## Sprint 4 (2026-09-04) — PWA Phase1(manifest/icon/install)
+- 実装: manifest.json(start_url "/" / standalone)・アイコン 192/512/maskable・index の meta/link・Lobby に beforeinstallprompt 導線
+- 検証: typecheck/build OK / manifest+icons 配信 200(application/json・image/png)
+- D4 は「a: オフラインは閲覧のみ」仮決定のまま。SW(Phase2)は未

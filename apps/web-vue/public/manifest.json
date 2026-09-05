@@ -1,0 +1,16 @@
+{
+  "name": "声の部屋",
+  "short_name": "声の部屋",
+  "description": "匿名・認証不要の音声掲示板。声を泡にのせて部屋に浮かべ、触れると聞こえる",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#020617",
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
