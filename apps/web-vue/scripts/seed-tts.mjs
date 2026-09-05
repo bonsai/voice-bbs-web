@@ -108,7 +108,9 @@ async function tts(text) {
 }
 
 function wrangler(args) {
-  execFileSync('pnpm', ['exec', 'wrangler', ...args], { cwd: process.cwd(), stdio: 'inherit' })
+  // use local wrangler (devDependency) — pnpm は使わない
+  const bin = join(process.cwd(), 'node_modules', '.bin', 'wrangler')
+  execFileSync(bin, args, { cwd: process.cwd(), stdio: 'inherit' })
 }
 
 function sqlEscape(value) { return String(value).replaceAll("'", "''") }
