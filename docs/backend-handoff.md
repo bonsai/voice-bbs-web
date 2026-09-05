@@ -7,7 +7,7 @@
 
 | 対象 | 内容 | 依存/注意 | 状態 |
 |---|---|---|---|
-| BE1 | 管理者削除の `ADMIN_TOKEN` 設定と検証 | env secret。フロントは API 済み | [ ] |
+| BE1 | 管理者削除の `ADMIN_TOKEN` 設定と検証 | env secret。フロントは API 済み | [~] preview(voice-bbs-web-vue)検証完了: admin DELETE 200(deleted_by=admin)/誤token拒否/owner削除共存。token: `~/.config/opencode/secrets/voice-bbs-web-admin-token.txt`(repo外)。**本番は web-vue の master 昇格(web-next→web-vue 切替)が前提と判明** — 本番 project の production branch は `master`(現行 web-next バンドルは admin コード無し)。secret put 済・切替 GO 待ち |
 | BE2 | 古い投稿自動クリーンアップ(CF Cron or 投稿時) | 保存形式(PNG/R2)との整合 | [x] 投稿時 n件保持(スレッド別100件)実装・ローカル検証済(110→100、R2削除確認)。全体TTL削除は未実施 |
 | BE3 | TTS seed の動作確認と issue 状態の整合 | scripts(09-04 追加分) | [~] スクリプト修正(wrangler devDep 追加 + ローカルbin化)。実行は wrangler認証 + `OPENAI_API_KEY` 待ち |
 | BE4 | CI: GitHub Actions(test/typecheck→deploy) | 両プロジェクト / O1 | [~] CI ワークフロー作成済(`.github/workflows/ci.yml`: test/typecheck/build + preview deploy)。GitHub リポジトリに `CLOUDFLARE_API_TOKEN` secret 設定で有効化 |
