@@ -69,7 +69,7 @@
 |---|---|---|
 | 手動 deploy | `wrangler pages deploy out --project-name voice-bbs-web` | [x] 実績あり |
 | Pages Git 連携 | CF Dashboard → Git 連携、push で自動 build/deploy | [ ] 未設定 |
-| GitHub Actions | `cloudflare/pages-action` で deploy | [ ] 未設定 |
+| GitHub Actions | `cloudflare/pages-action` で deploy | [~] `.github/workflows/ci.yml` 作成済(BE4)。GitHub secret `CLOUDFLARE_API_TOKEN` 設定後に有効 |
 
 詳細: `docs/deploy.md`
 

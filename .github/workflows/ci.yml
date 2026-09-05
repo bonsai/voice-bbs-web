@@ -1,0 +1,52 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  test:
+    name: test / typecheck / build (web-vue)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web-vue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web-vue/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run test
+      - run: npm run build
+
+  # Preview deploy. 実行には GitHub リポジトリに CLOUDFLARE_API_TOKEN secret
+  # (権限: Workers Scripts / Pages / D1 / R2 の Edit / Account 290e65605de6f2b8a5f61dbfaa36e28c) が必要。
+  # secret 未設定の間はこの job はスキップされる(本番 deploy は従来どおり承認制)。
+  deploy-preview:
+    name: deploy preview (voice-bbs-web-vue) on master
+    if: github.ref == 'refs/heads/master' && secrets.CLOUDFLARE_API_TOKEN != ''
+    needs: test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web-vue
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web-vue/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to Cloudflare Pages (preview)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 290e65605de6f2b8a5f61dbfaa36e28c
+          command: pages deploy dist --project-name voice-bbs-web-vue --branch main
