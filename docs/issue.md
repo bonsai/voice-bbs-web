@@ -1,6 +1,6 @@
 # Issues — voice-bbs-web
 
-> 更新: 2026-09-04。**新しいイシューを上に**。状態: `[x]`完了 / `[~]`進行 / `[ ]`未着手 / `[!]`ブロック
+> 更新: 2026-09-05。**新しいイシューを上に**。状態: `[x]`完了 / `[~]`進行 / `[ ]`未着手 / `[!]`ブロック
 
 ## 新規イシュー(上・新しい順)
 
@@ -9,7 +9,11 @@
 | V4 | P0 | Next vs Vue 比較文書(切替判断の根拠) | [x] | `docs/compare-next-vue.md`。ADR-001 根拠の実測化。→ D2 判断材料 |
 | T-DS1 | デザイントークンの既存コンポーネント適用(Bubble/Sheet/Card 等) | [ ] | トークン v1 済み。semantic class 化は別途 |
 | D5 | P2 | 意思決定: デザインシステム導入方針 | [x] | 採用 a: 自前トークン+Tailwind v4 @theme。トークン v1 実装済み(`style.css`)。適用は T-DS1 |
-| BE | P1 | バックエンド委譲(別担当) | [~] | 割当: **木村拓哉(kimura)** 2026-09-05。BE2実装/検証済・BE7同期確認済・BE6確定。BE1は認証待ち(`docs/backend-handoff.md`) |
+| BE1-P | P0 | 本番切替: web-vue を master(production)へ昇格 | [!] | production branch は `master`(現行 web-next バンドルは ADMIN_TOKEN コード無し)。`wrangler pages deploy dist --project-name voice-bbs-web --branch master` → 本番 admin 検証。GO 待ち。preview 検証は完了(`docs/backend-handoff.md` BE1) |
+| BE4-P | P1 | CI 有効化: `CLOUDFLARE_API_TOKEN` secret | [!] | GitHub リポジトリ secret 追加で deploy-preview ジョブが有効になる(BE4)。オーナー作業 |
+| BE5 | P2 | D1/R2 運用メモ整備 | [ ] | migration 手順・データ整合チェック(`docs/deploy.md` §2 を運用手順として拡充) |
+| TTS-RUN | P2 | TTS seed 実行 | [ ] | `OPENAI_API_KEY` + wrangler 認証で `node apps/web-vue/scripts/seed-tts.mjs --remote`(約30サンプル) |
+| BE | P1 | バックエンド委譲(別担当) | [~] | 割当: **木村拓哉(kimura)** 2026-09-05。BE2/BE3/BE4/BE6/BE7 完了・BE1 は preview 検証済(残務: BE1-P)。(`docs/backend-handoff.md`) |
 | D4 | P1 | 意思決定: PWA 化方針(SW 戦略含む) | [ ] | 選択肢は `docs/decision-options.md` #D4。決定後 ADR-00X 化→ T10 実装 |
 | D3 | P2 | 意思決定: デザイン会議 #2 と泡ガラス化の要否 | [ ] | `docs/decision-options.md` #D3。→ R2 prototype |
 | D2 | P0 | 意思決定: 本番切替タイミングと Next 撤去方針 | [x] | 決定: Next 残置・無視、Vue 主線で並行(バック共通)。`docs/decision-options.md` #D2。issue 15 は凍結 |
