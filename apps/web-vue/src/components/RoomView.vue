@@ -277,12 +277,14 @@ onMounted(async () => {
           :class="[playingId === it.id ? 'z-10' : '', isMine(it) ? '' : '']"
           :style="{
             width: it.size + 'px', height: it.size + 'px',
-            left: it.x + '%', top: it.y + '%', transform: 'translate(-50%,-50%)',
+            left: it.x + '%', top: it.y + '%',
+            transform: `translate(-50%,-50%) scale(${playingId === it.id ? 1.12 : 1})`,
+            opacity: playingId && playingId !== it.id ? 0.4 : 1,
             backgroundImage: `url(${it.audio_url})`, backgroundSize: 'cover', backgroundPosition: 'center',
             border: `2px solid ${it.device_id === myId ? '#fbbf24' : color}aa`,
-            boxShadow: playingId === it.id ? `0 0 44px ${color}` : `inset -12px -12px 24px rgba(0,0,0,0.5), 0 4px 18px ${color}33`,
+            boxShadow: playingId === it.id ? `0 0 44px ${color}, 0 0 80px ${color}66` : `inset -12px -12px 24px rgba(0,0,0,0.5), 0 4px 18px ${color}33`,
             animation: `float ${it.dur}s ease-in-out infinite alternate`, animationDelay: it.delay + 's',
-            transition: 'box-shadow .12s',
+            transition: 'box-shadow .18s, transform .18s, opacity .18s',
           }"
           :aria-label="it.duration.toFixed(1) + '秒の声'"
           @pointerdown="bubbleDown($event, it)"
