@@ -98,9 +98,20 @@ async function openRoom(r: Room) {
   emit('open', r)
 }
 
+const micBanner = ref(false)
+function dismissMicBanner() {
+  micBanner.value = false
+  localStorage.setItem('voice_bbs_mic_dismissed', '1')
+}
+
 onMounted(() => {
   playPop(0.15, 600) // 起動ポップ
   void load()
+  if (!localStorage.getItem('voice_bbs_mic_dismissed')) {
+    navigator.permissions?.query({ name: 'microphone' as PermissionName }).then((r) => {
+      if (r.state !== 'granted') micBanner.value = true
+    }).catch(() => { /* noop */ })
+  }
 })
 </script>
 
@@ -109,7 +120,7 @@ onMounted(() => {
     <div class="flex items-center justify-between">
       <h1 class="text-2xl font-bold animate-title">声の部屋</h1>
       <!-- パターン切替(検証用) -->
-      <div class="flex rounded-full border border-slate-700 overflow-hidden text-xs">
+      <div class="flex rounded-full border border-line overflow-hidden text-xs">
         <button v-for="m in ['A', 'B', 'C'] as const" :key="m"
           class="px-3 py-1.5 min-h-[36px]"
           :class="uiMode === m ? 'bg-white text-slate-950' : 'text-slate-400'"
@@ -138,16 +149,20 @@ onMounted(() => {
       <span class="flex-1 text-xs text-slate-300">ホーム画面に追加すると全画面で使えます</span>
       <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="install">インストール</button>
     </div>
+    <div v-if="micBanner" class="mb-3 flex items-center gap-2 bg-surface-2/80 rounded-xl px-3 py-2">
+      <span class="flex-1 text-xs text-slate-300">マイクを許可すると、部屋で声を吹き込めます</span>
+      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="dismissMicBanner">閉じる</button>
+    </div>
 
     <div class="flex gap-2 flex-wrap mb-4">
       <button
         class="px-3 py-1 rounded-full text-sm border transition-colors min-h-[44px]"
-        :class="active === '' ? 'border-white text-white' : 'border-slate-700 text-slate-400'"
+        :class="active === '' ? 'border-white text-white' : 'border-line text-slate-400'"
         @click="select('')"
       >全部</button>
       <button
         v-for="c in categories" :key="c.id"
-        class="px-3 py-1 rounded-full text-sm border border-slate-700 min-h-[44px] transition-colors"
+        class="px-3 py-1 rounded-full text-sm border border-line min-h-[44px] transition-colors"
         :class="active === c.id ? '' : 'text-slate-400'"
         :style="active === c.id ? { borderColor: c.color, color: c.color } : {}"
         @click="select(c.id)"

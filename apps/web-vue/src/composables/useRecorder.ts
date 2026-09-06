@@ -12,7 +12,7 @@ export function useRecorder(
 ) {
   const recording = ref(false)
   const elapsed = ref(0)
-  const error = ref<string | null>(null)
+  const error = ref<'mic_denied' | 'volume_low' | 'too_short' | 'encode_failed' | null>(null)
   const canRecord = ref(true)
 
   let mediaRecorder: MediaRecorder | null = null

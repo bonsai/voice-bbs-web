@@ -10,7 +10,7 @@ function voiceBuffer(url: string): Promise<AudioBuffer> {
   if (!p) {
     p = bufferForUrl(url, fetchPngBytes)
     cache.set(url, p)
-    p.catch(() => cache.delete(url))
+    p.catch((err) => { cache.delete(url); throw err })
   }
   return p
 }

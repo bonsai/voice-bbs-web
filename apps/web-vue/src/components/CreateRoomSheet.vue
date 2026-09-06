@@ -48,7 +48,7 @@ async function submit() {
         <button
           type="button"
           class="flex-1 rounded-xl px-4 py-4 text-center border"
-          :class="listening ? 'bg-rose-500/20 border-rose-400 text-rose-200' : 'border-slate-700 text-slate-200'"
+          :class="listening ? 'bg-rose-500/20 border-rose-400 text-rose-200' : 'border-line text-slate-200'"
           @click="tapMic"
         >
           <span class="block text-lg">{{ listening ? '聞いています… 名前を言ってください' : '声で部屋の名前を言う' }}</span>

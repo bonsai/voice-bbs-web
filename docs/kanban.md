@@ -27,11 +27,11 @@
 | 4 | Thread/Post API + R2 upload | [x] | レート制限・削除API 含む |
 | 5 | PNG decode & 自動連続再生 | [x] | プロキシ配信に変更済み |
 | 6 | TTS サンプル seed | [ ] | — |
-| 7 | PWA (manifest / SW / offline) | [ ] | — |
-| 8 | 投稿者本人削除 | [~] | API 実装済み・UI 未接続 |
-| 9 | 古い投稿自動クリーンアップ | [ ] | — |
+| 7 | PWA (manifest / SW / offline) | [~] | Phase1(manifest/icons/install導線)実装済み。SWは未 |
+| 8 | 投稿者本人削除 | [x] | 300ms長押し+削除シート実装済み。APIも接続済み |
+| 9 | 古い投稿自動クリーンアップ | [~] | 投稿時 n件保持(スレッド別100)実装済み。cron TTL は未実装 |
 | 10 | 接続状態オーバーレイ | [ ] | — |
-| 11 | ランディング マイクチェック | [ ] | — |
+| 11 | ランディング マイクチェック | [x] | Permissions API + dismiss バナー実装済み |
 | 12 | DB テキスト検索 | [~] | API LIKE 検索 + FTS5 整備済み。UI 利用状況は要確認 |
 | 13 | デプロイ戦略 | [~] | `docs/issue.md` デプロイ戦略節に集約。手動deployで本番稼働、自動化は未設定 |
 | 14 | OpenAPI 仕様書 | [x] | `openapi.yaml` は repo に存在 ※ISSUES.md の「未push」記載は古い |

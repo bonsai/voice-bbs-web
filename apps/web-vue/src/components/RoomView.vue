@@ -40,6 +40,15 @@ const cat = computed(() => props.categories.find((c) => c.id === props.roomMeta?
 const color = computed(() => cat.value?.color ?? 'var(--color-cat-none)')
 const name = computed(() => cat.value?.name ?? (props.roomMeta?.categoryId || 'room'))
 const roomTitle = computed(() => props.roomMeta?.title || '部屋')
+const recErrorMessage = computed(() => {
+  switch (recError.value) {
+    case 'mic_denied': return 'マイクを許可してください(端末の設定からも変更可)'
+    case 'volume_low': return '声が小さすぎました'
+    case 'too_short': return '短すぎました'
+    case 'encode_failed': return '音声の変換に失敗しました。もう一度お試しください'
+    default: return '録音に失敗しました'
+  }
+})
 const guideSteps = computed(() =>
   uiMode.value === 'A'
     ? ['泡に触れる = その声を聞く(もう一度で停止)', '下のボタンを長押し = 声を吹き込む', '黄色い泡は自分の声(長押しで消せる)']
@@ -256,7 +265,7 @@ onMounted(async () => {
     <p v-if="error" class="px-4 py-2 text-rose-400 text-sm">{{ error }}</p>
     <div v-if="recError" class="mx-4 my-2 px-3 py-2 rounded-xl bg-surface-2/80 flex items-center gap-2 text-sm">
       <span class="flex-1 text-amber-300">
-        {{ recError === 'volume_low' ? '声が小さすぎました' : recError === 'too_short' ? '短すぎました' : recError === 'mic_denied' ? 'マイクを許可してください(端末の設定からも変更可)' : '録音に失敗しました' }}
+        {{ recErrorMessage }}
       </span>
       <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="recError = null">
         もう一度試す
