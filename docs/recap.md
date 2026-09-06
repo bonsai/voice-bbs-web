@@ -7,6 +7,7 @@
 - フロント: T3 再生エフェクト完了、T-DS1 トークン適用完了、T4 エラーローカライズ完了、T5 キャッシュ修正、T8 マイクチェック導入済み
 - vitest 21 passed / typecheck / build OK (JS 91 kB・gzip 35 kB)
 - CI: `.github/workflows/ci.yml` 修正済み。secret 未設定時も test/build job は自走。deploy step のみ skip
+- **BE1-P 完了: 本番切替済み。** https://voice-bbs-web.pages.dev は Vue アプリ稼働中 |
 
 ## 今セッションの完了(証拠)
 

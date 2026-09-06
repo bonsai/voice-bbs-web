@@ -9,7 +9,7 @@
 | V4 | P0 | Next vs Vue 比較文書(切替判断の根拠) | [x] | `docs/compare-next-vue.md`。ADR-001 根拠の実測化。→ D2 判断材料 |
 | T-DS1 | デザイントークンの既存コンポーネント適用(Bubble/Sheet/Card 等) | [x] | border-line 統一、color-mix、フォールバック色トークン化済み |
 | D5 | P2 | 意思決定: デザインシステム導入方針 | [x] | 採用 a: 自前トークン+Tailwind v4 @theme。トークン v1 実装済み(`style.css`)。適用は T-DS1 |
-| BE1-P | P0 | 本番切替: web-vue を master(production)へ昇格 | [!] | production branch は `master`(現行 web-next バンドルは ADMIN_TOKEN コード無し)。`wrangler pages deploy dist --project-name voice-bbs-web --branch master` → 本番 admin 検証。GO 待ち。preview 検証は完了(`docs/backend-handoff.md` BE1) |
+| BE1-P | P0 | 本番切替: web-vue を master(production)へ昇格 | [x] | `wrangler pages deploy dist --branch master` 実行済み。https://voice-bbs-web.pages.dev で Vue アプリ稼働中。旧 Next はバンドル上書き |
 | BE4-P | P1 | CI 有効化: `CLOUDFLARE_API_TOKEN` secret | [!] | GitHub リポジトリ secret 追加で deploy-preview ジョブが有効になる(BE4)。オーナー作業 |
 | BE5 | P2 | D1/R2 運用メモ整備 | [ ] | migration 手順・データ整合チェック(`docs/deploy.md` §2 を運用手順として拡充) |
 | TTS-RUN | P2 | TTS seed 実行 | [ ] | `OPENAI_API_KEY` + wrangler 認証で `node apps/web-vue/scripts/seed-tts.mjs --remote`(約30サンプル) |
