@@ -37,7 +37,7 @@ const { recording, elapsed, error: recError, start: recStart, stop: recStop, can
   })
 
 const cat = computed(() => props.categories.find((c) => c.id === props.roomMeta?.categoryId))
-const color = computed(() => cat.value?.color ?? '#94a3b8')
+const color = computed(() => cat.value?.color ?? 'var(--color-cat-none)')
 const name = computed(() => cat.value?.name ?? (props.roomMeta?.categoryId || 'room'))
 const roomTitle = computed(() => props.roomMeta?.title || '部屋')
 const guideSteps = computed(() =>
@@ -281,7 +281,10 @@ onMounted(async () => {
             transform: `translate(-50%,-50%) scale(${playingId === it.id ? 1.12 : 1})`,
             opacity: playingId && playingId !== it.id ? 0.4 : 1,
             backgroundImage: `url(${it.audio_url})`, backgroundSize: 'cover', backgroundPosition: 'center',
-            border: `2px solid ${it.device_id === myId ? '#fbbf24' : color}aa`,
+            border: '2px solid',
+            borderColor: it.device_id === myId
+              ? 'color-mix(in srgb, var(--color-owner), transparent 33%)'
+              : `color-mix(in srgb, ${color}, transparent 33%)`,
             boxShadow: playingId === it.id ? `0 0 44px ${color}, 0 0 80px ${color}66` : `inset -12px -12px 24px rgba(0,0,0,0.5), 0 4px 18px ${color}33`,
             animation: `float ${it.dur}s ease-in-out infinite alternate`, animationDelay: it.delay + 's',
             transition: 'box-shadow .18s, transform .18s, opacity .18s',
