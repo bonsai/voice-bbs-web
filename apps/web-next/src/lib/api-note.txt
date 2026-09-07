@@ -1,0 +1,1 @@
+Next FE uses the shared Hono API under /api.
