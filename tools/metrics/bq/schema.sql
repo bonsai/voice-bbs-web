@@ -27,5 +27,13 @@ CREATE TABLE IF NOT EXISTS `voice_bbs.frontend_metrics` (
   cost_deploy FLOAT64,
   cost_maintenance FLOAT64,
   cost_migration FLOAT64,
+  aw_run_duration_ms INT64,
+  aw_llm_input_tokens INT64,
+  aw_llm_output_tokens INT64,
+  aw_llm_cost_usd FLOAT64,
+  aw_compute_cost_usd FLOAT64,
+  aw_external_api_cost_usd FLOAT64,
+  aw_total_cost_usd FLOAT64,
+  aw_cost_per_score_point_usd FLOAT64,
   commit_sha STRING
 );
