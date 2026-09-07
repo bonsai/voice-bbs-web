@@ -1,0 +1,7 @@
+# compare Vue / Next.js / React
+
+Issue #14: Voice BBS frontend stack comparison.
+
+Current repository evidence is documented in `docs/compare-next-vue.md`. Vue/Next are measured in-repo; React is currently an unimplemented candidate and must not be represented as measured.
+
+Decision candidate: continue Vue 3 + Vite for the current Voice BBS product; retain Next for rollback/comparison; evaluate React only through a controlled PoC.
