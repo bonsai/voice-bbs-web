@@ -42,6 +42,7 @@ export function deviceId() {
 }
 
 export const api = {
+  healthz: () => request<{ ok: boolean }>('/healthz'),
   categories: () => request<{ ok: boolean; categories: Category[] }>('/categories'),
   rooms: (category?: string) => request<{ ok: boolean; threads: Room[] }>(`/threads${category ? `?category=${encodeURIComponent(category)}` : ''}`),
   voices: (roomId: string) => request<{ ok: boolean; posts: Voice[] }>(`/threads/${encodeURIComponent(roomId)}/posts`),
