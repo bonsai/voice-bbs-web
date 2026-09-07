@@ -6,8 +6,8 @@ on:
   pull_request:
 
 jobs:
-  test:
-    name: test / hono / typecheck / build (web-vue)
+  hono-gate:
+    name: Hono gate / test / typecheck / build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -20,11 +20,14 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web-vue/package-lock.json
       - run: npm ci
-      - name: Hono smoke test
+      - name: Hono API tests
         run: npm run test:hono
-      - run: npm run typecheck
-      - run: npm run test
-      - run: npm run build
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Full test suite
+        run: npm run test
+      - name: Production build
+        run: npm run build
 
   # Preview deploy. 実行には GitHub リポジトリに CLOUDFLARE_API_TOKEN secret
   # (権限: Workers Scripts / Pages / D1 / R2 の Edit / Account 290e65605de6f2b8a5f61dbfaa36e28c) が必要。
@@ -32,7 +35,7 @@ jobs:
   deploy-preview:
     name: deploy preview (voice-bbs-web-vue) on master
     if: github.ref == 'refs/heads/master'
-    needs: test
+    needs: hono-gate
     runs-on: ubuntu-latest
     defaults:
       run:
