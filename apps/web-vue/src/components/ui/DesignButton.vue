@@ -26,11 +26,11 @@ defineEmits<{ click: [event: MouseEvent] }>()
   min-width: 44px;
   padding: 0.625rem 1rem;
   border: 1px solid var(--color-line);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-card);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease;
+  transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
 }
 .ui-button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .ui-button:active:not(:disabled) { transform: scale(0.98); }
@@ -38,6 +38,6 @@ defineEmits<{ click: [event: MouseEvent] }>()
 .ui-button--primary { background: var(--color-owner); color: #111827; border-color: transparent; }
 .ui-button--secondary { background: var(--color-surface-2); color: #f8fafc; }
 .ui-button--ghost { background: transparent; color: #e2e8f0; }
-.ui-button--danger { background: #7f1d1d; color: #fff; border-color: #991b1b; }
+.ui-button--danger { background: color-mix(in srgb, var(--color-cat-trouble) 72%, #000); color: #fff; border-color: var(--color-cat-trouble); }
 @media (prefers-reduced-motion: reduce) { .ui-button { transition: none; } }
 </style>
