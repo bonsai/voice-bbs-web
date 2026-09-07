@@ -9,3 +9,6 @@ dist/
 # Cloudflare
 .wrangler/
 .functions/
+
+# TTS sample data (local test fixtures, not for repo)
+test_data/
