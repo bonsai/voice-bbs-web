@@ -18,16 +18,13 @@ const app = new Hono<Env>().basePath('/api')
 // Older posts are deleted from both D1 and R2.
 const MAX_POSTS_PER_THREAD = 100
 
-// healthz
 app.get('/healthz', (c) => c.json({ ok: true, status: 'ok' }))
 
-// categories
 app.get('/categories', async (c) => {
   const { results } = await c.env.DB.prepare('SELECT * FROM categories ORDER BY id').all()
   return c.json({ ok: true, categories: results })
 })
 
-// threads list (with optional search via FTS5)
 app.get('/threads', async (c) => {
   const category = c.req.query('category')
   const q = c.req.query('q')
@@ -54,7 +51,6 @@ app.get('/threads', async (c) => {
   return c.json({ ok: true, threads: results })
 })
 
-// create thread
 app.post('/threads', async (c) => {
   const body = await c.req.json<{ category_id: string; title?: string; device_id: string }>()
   if (!body.category_id || !body.device_id) return c.json({ ok: false, error: 'missing' }, 400)
@@ -76,7 +72,6 @@ app.post('/threads', async (c) => {
   return c.json({ ok: true, id })
 })
 
-// posts in thread
 app.get('/threads/:id/posts', async (c) => {
   const threadId = c.req.param('id')
   const { results } = await c.env.DB.prepare(
@@ -85,7 +80,6 @@ app.get('/threads/:id/posts', async (c) => {
   return c.json({ ok: true, posts: results })
 })
 
-// create post
 app.post('/threads/:id/posts', async (c) => {
   const threadId = c.req.param('id')
   const body = await c.req.json<{
@@ -118,7 +112,6 @@ app.post('/threads/:id/posts', async (c) => {
     `INSERT INTO posts (id, thread_id, device_id, audio_url, duration, content) VALUES (?, ?, ?, ?, ?, ?)`
   ).bind(id, threadId, body.device_id, audio_url, body.duration, body.content ?? null).run()
 
-  // BE2: cleanup — drop posts beyond the newest MAX_POSTS_PER_THREAD in this thread.
   const old = await c.env.DB.prepare(
     `SELECT id, audio_url FROM posts WHERE thread_id = ? ORDER BY created_at DESC LIMIT -1 OFFSET ?`
   ).bind(threadId, MAX_POSTS_PER_THREAD).all<{ id: string; audio_url: string }>()
@@ -131,7 +124,6 @@ app.post('/threads/:id/posts', async (c) => {
   return c.json({ ok: true, id, url: audio_url, remaining: 4 - ((rate?.cnt ?? 0) + 1) })
 })
 
-// serve stored audio png through same origin (r2.dev has no CORS support)
 app.get('/audio/:key', async (c) => {
   const key = c.req.param('key')
   const obj = await c.env.BUCKET.get(`posts/${key}`)
@@ -142,7 +134,6 @@ app.get('/audio/:key', async (c) => {
   return new Response(obj.body, { headers })
 })
 
-// delete post: owner or admin
 app.delete('/posts/:id', async (c) => {
   const id = c.req.param('id')
   const device_id = c.req.query('device_id')
@@ -164,7 +155,6 @@ app.delete('/posts/:id', async (c) => {
   return c.json({ ok: true, deleted_by: admin ? 'admin' : 'owner' })
 })
 
-// count
 app.get('/count/:device_id', async (c) => {
   const device_id = c.req.param('device_id')
   const rate = await c.env.DB.prepare(
@@ -178,4 +168,5 @@ app.get('/count/:device_id', async (c) => {
   return c.json({ ok: true, count, remaining: Math.max(0, 4 - count) })
 })
 
+export { app }
 export const onRequest = handle(app)

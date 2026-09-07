@@ -7,7 +7,7 @@ on:
 
 jobs:
   test:
-    name: test / typecheck / build (web-vue)
+    name: test / hono / typecheck / build (web-vue)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -20,6 +20,8 @@ jobs:
           cache: npm
           cache-dependency-path: apps/web-vue/package-lock.json
       - run: npm ci
+      - name: Hono smoke test
+        run: npm run test:hono
       - run: npm run typecheck
       - run: npm run test
       - run: npm run build
