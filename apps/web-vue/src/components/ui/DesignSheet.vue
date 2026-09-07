@@ -52,16 +52,20 @@ const emit = defineEmits<{ close: [] }>()
   min-width: 44px;
   min-height: 44px;
   border: 0;
-  border-radius: 9999px;
+  border-radius: var(--radius-bubble);
   background: var(--color-surface-2);
   color: #f8fafc;
   font-size: 1.5rem;
   cursor: pointer;
+  transition: background-color 160ms ease, transform 160ms ease;
 }
+.ui-sheet__close:hover { background: var(--color-line); }
+.ui-sheet__close:active { transform: scale(0.96); }
 .ui-sheet__close:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .ui-sheet__body { padding: 1.25rem; }
 @media (min-width: 640px) {
   .ui-sheet-backdrop { align-items: center; padding: 1rem; }
   .ui-sheet { border-bottom: 1px solid var(--color-line); border-radius: var(--radius-sheet); }
 }
+@media (prefers-reduced-motion: reduce) { .ui-sheet__close { transition: none; } }
 </style>
