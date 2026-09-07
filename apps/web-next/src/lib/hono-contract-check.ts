@@ -1,0 +1,1 @@
+export const honoContract = ["healthz", "categories", "threads", "posts", "count"] as const;
