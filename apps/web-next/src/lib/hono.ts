@@ -1,0 +1,1 @@
+export const HonoApiPath = "/api" as const;
