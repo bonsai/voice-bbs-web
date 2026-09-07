@@ -79,4 +79,98 @@ describe('Hono API', () => {
       posts: [{ id: 'post-1', thread_id: 'thread-1' }],
     })
   })
+
+  it('POST /api/threads/:id/posts rejects missing voice-post fields', async () => {
+    const response = await app.request('/api/threads/thread-1/posts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ device_id: 'device-1' }),
+    }, {
+      DB: dbMock() as never,
+      BUCKET: {} as never,
+      R2_PUBLIC_URL: '',
+    })
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({ ok: false, error: 'missing' })
+  })
+
+  it('POST /api/threads/:id/posts uploads the image and creates a post', async () => {
+    const db = dbMock()
+    db.first.mockResolvedValue({ cnt: 0 })
+    const bucket = {
+      put: vi.fn(async () => undefined),
+      delete: vi.fn(async () => undefined),
+    }
+
+    const response = await app.request('/api/threads/thread-1/posts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ image_base64: 'aGVsbG8=', duration: 3.5, device_id: 'device-1', content: 'hello' }),
+    }, {
+      DB: db as never,
+      BUCKET: bucket as never,
+      R2_PUBLIC_URL: '',
+    })
+
+    expect(response.status).toBe(200)
+    const body = await response.json() as { ok: boolean; id: string; url: string; remaining: number }
+    expect(body.ok).toBe(true)
+    expect(body.id).toEqual(expect.any(String))
+    expect(body.url).toMatch(/^\/api\/audio\/.+\.png$/)
+    expect(body.remaining).toBe(3)
+    expect(bucket.put).toHaveBeenCalledTimes(1)
+    expect(bucket.put).toHaveBeenCalledWith(
+      expect.stringMatching(/^posts\/.+\.png$/),
+      expect.any(Uint8Array),
+      { httpMetadata: { contentType: 'image/png' } },
+    )
+    expect(db.run).toHaveBeenCalledTimes(2)
+    expect(db.all).toHaveBeenCalledTimes(1)
+  })
+
+  it('POST /api/threads/:id/posts rejects a device that reached the daily limit', async () => {
+    const db = dbMock()
+    db.first.mockResolvedValue({ cnt: 4 })
+    const bucket = { put: vi.fn(), delete: vi.fn() }
+
+    const response = await app.request('/api/threads/thread-1/posts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ image_base64: 'aGVsbG8=', duration: 3.5, device_id: 'device-1' }),
+    }, {
+      DB: db as never,
+      BUCKET: bucket as never,
+      R2_PUBLIC_URL: '',
+    })
+
+    expect(response.status).toBe(429)
+    await expect(response.json()).resolves.toEqual({ ok: false, error: 'limit_reached' })
+    expect(bucket.put).not.toHaveBeenCalled()
+    expect(db.run).not.toHaveBeenCalled()
+  })
+
+  it('POST /api/threads/:id/posts removes posts beyond the 100-post cap', async () => {
+    const db = dbMock()
+    db.first.mockResolvedValue({ cnt: 0 })
+    db.all.mockResolvedValue({ results: [{ id: 'old-post', audio_url: '/api/audio/old-post.png' }] })
+    const bucket = {
+      put: vi.fn(async () => undefined),
+      delete: vi.fn(async () => undefined),
+    }
+
+    const response = await app.request('/api/threads/thread-1/posts', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ image_base64: 'aGVsbG8=', duration: 2, device_id: 'device-1' }),
+    }, {
+      DB: db as never,
+      BUCKET: bucket as never,
+      R2_PUBLIC_URL: '',
+    })
+
+    expect(response.status).toBe(200)
+    expect(db.run).toHaveBeenCalledTimes(3)
+    expect(bucket.delete).toHaveBeenCalledWith('posts/old-post.png')
+  })
 })
