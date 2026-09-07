@@ -33,9 +33,10 @@ export function getExperience(storage: Storage): TrialState {
   return read(storage)
 }
 
-export function startTrial(storage: Storage) {
+export function startTrial(storage: Storage): TrialState {
   const current = read(storage)
   if (current.state === 'new') write(storage, { ...current, state: 'trial' })
+  return read(storage)
 }
 
 export function recordTrialInteraction(storage: Storage): TrialState {
@@ -45,6 +46,13 @@ export function recordTrialInteraction(storage: Storage): TrialState {
   const interactions = current.interactions + 1
   const state: ExperienceState = interactions >= threshold ? 'experienced' : 'trial'
   const next = { state, interactions }
+  write(storage, next)
+  return next
+}
+
+export function markExperienced(storage: Storage): TrialState {
+  const current = read(storage)
+  const next = { ...current, state: 'experienced' as const }
   write(storage, next)
   return next
 }
