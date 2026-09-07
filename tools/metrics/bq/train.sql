@@ -26,6 +26,14 @@ SELECT
   dependency_count,
   build_duration_ms,
   test_duration_ms,
-  typecheck_duration_ms
+  typecheck_duration_ms,
+  aw_run_duration_ms,
+  aw_llm_input_tokens,
+  aw_llm_output_tokens,
+  aw_llm_cost_usd,
+  aw_compute_cost_usd,
+  aw_external_api_cost_usd,
+  aw_total_cost_usd,
+  aw_cost_per_score_point_usd
 FROM `voice_bbs.frontend_metrics`
 WHERE overall_score IS NOT NULL;
