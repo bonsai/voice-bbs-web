@@ -14,13 +14,14 @@ defineProps<{ title?: string }>()
   background: var(--color-surface);
   border: 1px solid var(--color-line);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-bubble);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.18);
   overflow: hidden;
 }
 .ui-panel__header {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--color-line);
   font-weight: 700;
+  line-height: 1.4;
 }
 .ui-panel__body { padding: 1rem; }
 </style>
