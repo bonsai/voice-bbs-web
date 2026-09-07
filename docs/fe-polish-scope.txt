@@ -1,0 +1,1 @@
+Issue #6: FE-only polish. Backend/API/data contracts unchanged.
