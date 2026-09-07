@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "voice-bbs-frontend-metrics/v1",
+  "type": "object",
+  "required": ["schema", "target", "measured_at", "environment", "artifact", "source", "dependencies"],
+  "properties": {
+    "schema": { "const": "voice-bbs-frontend-metrics/v1" },
+    "target": { "enum": ["vue", "react", "next"] },
+    "measured_at": { "type": "string", "format": "date-time" },
+    "environment": { "type": "object" },
+    "artifact": {
+      "type": "object",
+      "properties": {
+        "total_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "js_bytes": { "type": ["integer", "null"], "minimum": 0 },
+        "css_bytes": { "type": ["integer", "null"], "minimum": 0 }
+      }
+    },
+    "source": { "type": "object" },
+    "dependencies": { "type": "object" },
+    "finish": { "type": ["object", "null"] },
+    "development_cost": { "type": ["object", "null"] }
+  }
+}
