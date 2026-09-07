@@ -1,0 +1,1 @@
+The Next.js frontend consumes the shared Hono API at `/api`.
