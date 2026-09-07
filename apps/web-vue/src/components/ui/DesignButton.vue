@@ -21,17 +21,7 @@ defineEmits<{ click: [event: MouseEvent] }>()
 </template>
 
 <style scoped>
-.ui-button {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 0.625rem 1rem;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-card);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease, border-color 160ms ease;
-}
+.ui-button { min-height: 44px; min-width: 44px; padding: 0.625rem 1rem; border: 1px solid var(--color-line); border-radius: var(--radius-card); font: inherit; font-weight: 600; cursor: pointer; transition: opacity 160ms ease, transform 160ms ease, background-color 160ms ease, border-color 160ms ease; }
 .ui-button:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
 .ui-button:active:not(:disabled) { transform: scale(0.98); }
 .ui-button:disabled { opacity: 0.45; cursor: not-allowed; }
