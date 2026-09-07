@@ -1,0 +1,100 @@
+version: "0.1"
+domain: voice-bbs-web
+contract: bonsai/ecosystem/domains/voice-bbs-web.yaml
+design_system: docs/design-system.md
+implementation: apps/web-vue
+
+mapping:
+  device_id:
+    semantic: anonymous_identity
+    ui: ownership_context
+    components: [VoiceBubble, VoiceRecorder]
+  category:
+    semantic: room_classification
+    ui: category_filter
+    components: [CategoryTabs, CategoryChip]
+  room:
+    semantic: conversation_space
+    ui: room_surface
+    patterns: [discover_room, create_room]
+    components: [Lobby, RoomView, CreateRoomSheet, RoomCard]
+  voice_bubble:
+    semantic: audio_message
+    ui: primary_audio_object
+    pattern: touch_to_speak
+    states: [idle, focused, playing, loading, error, deleted, owner]
+    components: [VoiceBubble]
+  recording:
+    semantic: audio_capture
+    ui: recorder_flow
+    pattern: record_voice
+    states: [idle, recording, recorded, encoding, uploading, posted, error]
+    components: [VoiceRecorder, RecorderControl]
+  playback:
+    semantic: audio_output
+    ui: playback_feedback
+    pattern: touch_to_speak
+    states: [idle, loading, playing, ended, error]
+    components: [VoicePlayer]
+  search_index:
+    semantic: room_discovery
+    ui: search
+    pattern: discover_room
+    components: [RoomSearch]
+  evidence:
+    semantic: observed_user_outcome
+    ui: instrumentation
+    consumers: [aw, bqml, intelligence]
+
+patterns:
+  discover_room:
+    input: [category, query]
+    output: room
+    flow: [Lobby, Search, CategoryTabs, RoomCard]
+  create_room:
+    input: [device_id, category, title]
+    output: room
+    flow: [CreateRoomSheet, Form, Validation, Success]
+  touch_to_speak:
+    input: voice_bubble
+    output: playback
+    flow: [VoiceBubble, Loading, Playing, Ended]
+  record_voice:
+    input: microphone_input
+    output: voice_bubble
+    flow: [VoiceRecorder, Permission, Recording, Processing, Uploading, Posted]
+  retry_failure:
+    input: error
+    output: retry_result
+    flow: [ErrorState, Explanation, Retry, SuccessOrError]
+  anonymous_ownership:
+    input: device_id
+    output: ownership_action
+    flow: [OwnerState, SelfAction, Confirmation]
+
+state_contract:
+  common: [default, hover, active, focus-visible, disabled, loading, empty, error, offline]
+  voice_bubble: [idle, focused, playing, loading, error, deleted, owner]
+  recorder: [idle, recording, recorded, encoding, uploading, posted, error]
+  player: [idle, loading, playing, ended, error]
+  connection: [online, offline, reconnecting]
+
+screen_contract:
+  lobby:
+    primitives: [category, room]
+    patterns: [discover_room, create_room]
+  room:
+    primitives: [room, voice_bubble, playback, device_id]
+    patterns: [touch_to_speak, record_voice, retry_failure, anonymous_ownership]
+  sheet:
+    primitives: [room, recording]
+    patterns: [create_room, record_voice]
+
+rules:
+  semantics_first: true
+  tokens_before_local_css: true
+  component_before_screen_specific_ui: true
+  pointer_keyboard_parity: true
+  reduced_motion_required: true
+  color_not_only_state_signal: true
+  mobile_touch_target_px: 44
