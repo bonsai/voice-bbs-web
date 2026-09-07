@@ -1,10 +1,11 @@
-// ロビー — カテゴリ + 部屋一覧 + 部屋作成(声で名前)。Voice-first / touch-first
+// ロビー — 初回はテスト雑談部屋へ。体験後に新規ルーム作成へ進む
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { createApi, type Category, type Room } from '@/lib/api'
 import CreateRoomSheet from '@/components/CreateRoomSheet.vue'
 import { playPop } from '@/lib/sfx'
 import { CategoryChip, DesignButton, RoomCard } from '@/components/ui'
+import { getExperience, startTrial } from '@/lib/trial'
 
 const props = defineProps<{ categories: Category[] }>()
 const emit = defineEmits<{ open: [room: Room] }>()
@@ -15,6 +16,7 @@ const rooms = ref<Room[]>([])
 const loading = ref(false)
 const error = ref<string | null>(null)
 const sheet = ref(false)
+const experience = ref(getExperience(localStorage))
 
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
@@ -41,6 +43,8 @@ window.addEventListener('beforeinstallprompt', onInstallPrompt)
 
 const catOf = (id: string) => props.categories.find((c) => c.id === id)
 const activeCategory = () => catOf(active.value) ?? props.categories[0]
+const testRoom = computed(() => rooms.value.find((r) => /テスト.*雑談|雑談.*テスト|test.*chat/i.test(r.title ?? '')))
+const canCreateRoom = computed(() => experience.value.state === 'experienced')
 
 async function load() {
   loading.value = true
@@ -62,7 +66,7 @@ function select(catId: string) {
 
 async function created(title: string) {
   const cat = activeCategory()
-  if (!cat) return
+  if (!cat || !canCreateRoom.value) return
   try {
     const { id } = await api.createRoom({ category_id: cat.id, title: title || undefined })
     sheet.value = false
@@ -73,9 +77,21 @@ async function created(title: string) {
   }
 }
 
+function joinRoom(r: Room) {
+  startTrial(localStorage)
+  experience.value = getExperience(localStorage)
+  playPop(0.3, 900)
+  emit('open', r)
+}
+
 function openRoom(r: Room) {
   playPop(0.3, 900)
   emit('open', r)
+}
+
+function requestCreateRoom() {
+  if (!canCreateRoom.value) return
+  sheet.value = true
 }
 
 const micBanner = ref(false)
@@ -101,9 +117,19 @@ onMounted(() => {
       <div class="min-w-0">
         <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">VOICE BBS</p>
         <h1 class="mt-1 text-2xl font-bold tracking-tight">声の部屋</h1>
-        <p class="mt-1 text-sm leading-6 text-slate-400">気になる部屋に入って、声で会話する。</p>
+        <p class="mt-1 text-sm leading-6 text-slate-400">まずは雑談部屋で、声の世界を試してみよう。</p>
       </div>
     </header>
+
+    <section v-if="testRoom && experience.state !== 'experienced'" class="mb-5 rounded-[var(--radius-card)] border border-line bg-surface/80 p-5">
+      <p class="text-xs font-semibold tracking-[0.14em] text-slate-500 uppercase">はじめての方へ</p>
+      <h2 class="mt-2 text-lg font-semibold text-white">まず「テスト雑談部屋」に入る</h2>
+      <p class="mt-1 text-sm leading-6 text-slate-400">泡を触って声を聞いて、気軽に一言話してみてください。</p>
+      <div class="mt-4 flex flex-wrap items-center gap-3">
+        <DesignButton label="テスト雑談部屋に入る" variant="primary" @click="joinRoom(testRoom!)" />
+        <span class="text-xs text-slate-500">声は3日で消えます</span>
+      </div>
+    </section>
 
     <section v-if="canInstall || micBanner" class="mb-5 space-y-2" aria-label="案内">
       <div v-if="canInstall" class="rounded-[var(--radius-card)] border border-line bg-surface/80 px-4 py-3">
@@ -145,33 +171,46 @@ onMounted(() => {
         <div v-for="i in 4" :key="i" class="min-h-24 animate-pulse rounded-[var(--radius-card)] border border-line bg-surface/60" />
       </div>
 
-      <div v-else-if="rooms.length" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <RoomCard
-          v-for="r in rooms"
-          :key="r.id"
-          :title="r.title || '無題の部屋'"
-          :category-name="catOf(r.category_id)?.name ?? r.category_id"
-          :category-color="catOf(r.category_id)?.color"
-          :post-count="r.post_count ?? 0"
-          @open="openRoom(r)"
-        />
-      </div>
+      <template v-else>
+        <div v-if="experience.state === 'experienced'" class="mb-4 rounded-[var(--radius-card)] border border-line bg-surface/60 px-4 py-3">
+          <p class="text-sm font-medium text-slate-200">体験できました。自分の部屋を作ることもできます。</p>
+          <p class="mt-1 text-xs text-slate-500">新規ルーム作成は有料機能です。</p>
+        </div>
+        <div v-else-if="rooms.length" class="mb-4 rounded-[var(--radius-card)] border border-dashed border-line px-4 py-3">
+          <p class="text-xs leading-5 text-slate-400">まずテスト雑談部屋で「聞く・触る・話す」を体験すると、新しい部屋を作れるようになります。</p>
+        </div>
 
-      <div v-else class="rounded-[var(--radius-card)] border border-dashed border-line px-5 py-10 text-center">
-        <p class="text-sm font-medium text-slate-300">まだ部屋がありません。</p>
-        <p class="mt-1 text-xs leading-5 text-slate-500">最初の部屋を作って、声を浮かべてみましょう。</p>
-      </div>
+        <div v-if="rooms.length" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <RoomCard
+            v-for="r in rooms"
+            :key="r.id"
+            :title="r.title || '無題の部屋'"
+            :category-name="catOf(r.category_id)?.name ?? r.category_id"
+            :category-color="catOf(r.category_id)?.color"
+            :post-count="r.post_count ?? 0"
+            @open="openRoom(r)"
+          />
+        </div>
+        <div v-else class="rounded-[var(--radius-card)] border border-dashed border-line px-5 py-10 text-center">
+          <p class="text-sm font-medium text-slate-300">まだ部屋がありません。</p>
+          <p class="mt-1 text-xs leading-5 text-slate-500">テスト雑談部屋が準備されるまでお待ちください。</p>
+        </div>
+      </template>
     </section>
 
     <div class="fixed inset-x-0 bottom-0 z-30 pointer-events-none px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
       <div class="mx-auto flex max-w-3xl justify-end">
+        <div v-if="!canCreateRoom" class="pointer-events-auto mr-3 self-end rounded-full border border-line bg-surface/90 px-4 py-2 text-xs text-slate-400 shadow-lg">
+          {{ experience.state === 'new' ? 'まずテスト雑談部屋へ' : 'もう少し体験すると作れます' }}
+        </div>
         <button
           type="button"
-          class="pointer-events-auto grid size-16 place-items-center rounded-full bg-white text-3xl text-slate-950 shadow-xl shadow-black/25 transition-transform duration-150 active:scale-95 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-4"
-          aria-label="新しい部屋を作る"
-          @click="sheet = true"
+          class="pointer-events-auto grid size-16 place-items-center rounded-full transition-transform duration-150 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-4"
+          :class="canCreateRoom ? 'bg-white text-3xl text-slate-950 shadow-xl shadow-black/25 active:scale-95' : 'bg-surface-2 text-xl text-slate-500 border border-line'"
+          :aria-label="canCreateRoom ? '新しい部屋を作る' : '新規ルーム作成は体験後に利用できます'"
+          @click="requestCreateRoom"
         >
-          ＋
+          {{ canCreateRoom ? '＋' : '🔒' }}
         </button>
       </div>
     </div>
