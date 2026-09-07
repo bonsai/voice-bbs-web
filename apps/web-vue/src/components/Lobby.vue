@@ -98,12 +98,10 @@ onMounted(() => {
 <template>
   <main class="mx-auto min-h-screen w-full max-w-3xl px-4 pt-6 pb-28">
     <header class="mb-5">
-      <div class="flex items-end justify-between gap-4">
-        <div class="min-w-0">
-          <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">VOICE BBS</p>
-          <h1 class="mt-1 text-2xl font-bold tracking-tight">声の部屋</h1>
-          <p class="mt-1 text-sm text-slate-400">気になる部屋に入って、声で会話する。</p>
-        </div>
+      <div class="min-w-0">
+        <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">VOICE BBS</p>
+        <h1 class="mt-1 text-2xl font-bold tracking-tight">声の部屋</h1>
+        <p class="mt-1 text-sm leading-6 text-slate-400">気になる部屋に入って、声で会話する。</p>
       </div>
     </header>
 
@@ -165,11 +163,11 @@ onMounted(() => {
       </div>
     </section>
 
-    <div class="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 pointer-events-none">
+    <div class="fixed inset-x-0 bottom-0 z-30 pointer-events-none px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4">
       <div class="mx-auto flex max-w-3xl justify-end">
         <button
           type="button"
-          class="pointer-events-auto grid size-16 place-items-center rounded-full bg-white text-3xl text-slate-950 shadow-xl shadow-black/25 transition-transform duration-160 active:scale-95 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-4"
+          class="pointer-events-auto grid size-16 place-items-center rounded-full bg-white text-3xl text-slate-950 shadow-xl shadow-black/25 transition-transform duration-150 active:scale-95 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-4"
           aria-label="新しい部屋を作る"
           @click="sheet = true"
         >
