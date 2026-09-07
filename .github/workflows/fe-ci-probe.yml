@@ -1,0 +1,35 @@
+name: FE CI Probe
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - fe
+    paths:
+      - 'apps/web-react/**'
+      - '.github/workflows/fe-ci-probe.yml'
+
+jobs:
+  probe:
+    name: FE probe
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web-react
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web-react/package-lock.json
+      - name: Install
+        run: npm ci
+      - name: Typecheck
+        run: npm run typecheck
+      - name: Test
+        run: npm run test -- --passWithNoTests
+      - name: Build
+        run: npm run build
