@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { createApi, getDeviceId, type Category, type Voice } from '@/lib/api'
+import VoiceBubble from '@/components/VoiceBubble.vue'
 import { usePlayer } from '@/composables/usePlayer'
 import { useRecorder, RECORD_MAX_SEC } from '@/composables/useRecorder'
 import { bubbleSizePx } from '@/lib/bubble'
@@ -57,7 +58,6 @@ const guideSteps = computed(() =>
       : ['泡に触れる = その声を聞く', '下のハンドルを上にスワイプ = 声を吹き込む', '黄色い泡は自分の声(長押しで消せる)'],
 )
 
-// --- 泡レイアウト(voice.id で決定的) ---
 function hashStr(s: string): number {
   let h = 0
   for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
@@ -85,36 +85,18 @@ const items = computed<Item[]>(() =>
 )
 const isMine = (v: Voice) => v.device_id === myId
 
-// --- 本人削除: 泡長押し(300ms)でメニュー ---
 const showGuide = ref(false)
 const selVoice = ref<Voice | null>(null)
 const deleting = ref(false)
-let lpTimer: ReturnType<typeof setTimeout> | null = null
-let lpSuppress = false
 
-function bubbleDown(e: PointerEvent, v: Voice) {
-  e.stopPropagation() // 空き長押し(録音)と競合しない
+function bubbleLongpress(v: Voice) {
   if (recording.value || !isMine(v)) return
-  lpSuppress = false
-  lpTimer = setTimeout(() => {
-    stop()
-    selVoice.value = v
-    lpSuppress = true
-    navigator.vibrate?.(20)
-  }, 300)
-}
-function bubbleUpCancel() {
-  if (lpTimer) {
-    clearTimeout(lpTimer)
-    lpTimer = null
-  }
+  stop()
+  selVoice.value = v
+  navigator.vibrate?.(20)
 }
 async function tap(v: Voice) {
-  bubbleUpCancel()
-  if (recording.value || lpSuppress) {
-    lpSuppress = false
-    return
-  }
+  if (recording.value) return
   await play(v.audio_url, v.id)
 }
 async function doDelete() {
@@ -134,7 +116,6 @@ async function doDelete() {
   }
 }
 
-// --- 録音ジェスチャ(B: 空き長押し / C: スワイプ) ---
 const ARM_MS = 260
 const arm = ref<{ x: number; y: number } | null>(null)
 let pressId = -1
@@ -264,12 +245,8 @@ onMounted(async () => {
 
     <p v-if="error" class="px-4 py-2 text-rose-400 text-sm">{{ error }}</p>
     <div v-if="recError" class="mx-4 my-2 px-3 py-2 rounded-xl bg-surface-2/80 flex items-center gap-2 text-sm">
-      <span class="flex-1 text-amber-300">
-        {{ recErrorMessage }}
-      </span>
-      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="recError = null">
-        もう一度試す
-      </button>
+      <span class="flex-1 text-amber-300">{{ recErrorMessage }}</span>
+      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="recError = null">もう一度試す</button>
     </div>
     <p v-if="notice" class="px-4 py-2 text-emerald-300 text-sm">{{ notice }}</p>
 
@@ -280,39 +257,25 @@ onMounted(async () => {
         <p v-if="voices.length === 0" class="text-slate-500 text-sm text-center mt-14 px-6">
           {{ uiMode === 'A' ? 'まだ声がありません。下のボタンを長押しして吹き込んでください' : uiMode === 'B' ? 'まだ声がありません。この空間のどこかを長押しして吹き込んでください' : 'まだ声がありません。下のハンドルを上にスワイプして吹き込んでください' }}
         </p>
-        <button
-          v-for="it in items" :key="it.id"
-          class="absolute rounded-full overflow-hidden"
-          :class="[playingId === it.id ? 'z-10' : '', isMine(it) ? '' : '']"
-          :style="{
-            width: it.size + 'px', height: it.size + 'px',
-            left: it.x + '%', top: it.y + '%',
-            transform: `translate(-50%,-50%) scale(${playingId === it.id ? 1.12 : 1})`,
-            opacity: playingId && playingId !== it.id ? 0.4 : 1,
-            backgroundImage: `url(${it.audio_url})`, backgroundSize: 'cover', backgroundPosition: 'center',
-            border: '2px solid',
-            borderColor: it.device_id === myId
-              ? 'color-mix(in srgb, var(--color-owner), transparent 33%)'
-              : `color-mix(in srgb, ${color}, transparent 33%)`,
-            boxShadow: playingId === it.id ? `0 0 44px ${color}, 0 0 80px ${color}66` : `inset -12px -12px 24px rgba(0,0,0,0.5), 0 4px 18px ${color}33`,
-            animation: `float ${it.dur}s ease-in-out infinite alternate`, animationDelay: it.delay + 's',
-            transition: 'box-shadow .18s, transform .18s, opacity .18s',
-          }"
-          :aria-label="it.duration.toFixed(1) + '秒の声'"
-          @pointerdown="bubbleDown($event, it)"
-          @pointerup="bubbleUpCancel"
-          @pointerleave="bubbleUpCancel"
-          @click="tap(it)"
-        >
-          <span v-if="playingId === it.id" class="absolute inset-0 flex items-center justify-center text-white/90">♪</span>
-          <span v-if="isMine(it)" class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-amber-400/90 text-[8px] leading-none flex items-center justify-center text-black">自</span>
-        </button>
+        <VoiceBubble
+          v-for="it in items"
+          :key="it.id"
+          :voice="it"
+          :color="color"
+          :mine="isMine(it)"
+          :playing="playingId === it.id"
+          :size="it.size"
+          :delay="it.delay"
+          :duration="it.duration"
+          :style="{ left: it.x + '%', top: it.y + '%' }"
+          @activate="tap(it)"
+          @longpress="bubbleLongpress(it)"
+        />
         <div v-if="arm && recording" class="absolute rounded-full pointer-events-none border-2 border-rose-400/80"
           :style="{ left: arm.x + 'px', top: arm.y + 'px', width: 64 + Math.min(elapsed * 14, 120) + 'px', height: 64 + Math.min(elapsed * 14, 120) + 'px', transform: 'translate(-50%,-50%)' }" />
       </template>
     </div>
 
-    <!-- 下部: 録音導線(A/B/C) -->
     <div class="border-t border-line bg-surface/80">
       <canvas ref="canvasRef" class="w-full h-10 hidden" :class="recording && uiMode !== 'C' ? '!block' : ''" />
       <div v-if="uiMode === 'A'" class="flex flex-col items-center py-3 gap-2">
@@ -343,7 +306,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 初回ガイド -->
     <div v-if="showGuide" class="fixed inset-0 z-40 bg-black/70 flex items-center justify-center p-6" @click="showGuide = false">
       <div class="bg-surface border border-slate-700 rounded-3xl p-6 w-full max-w-sm space-y-4">
         <div class="font-bold text-lg">この部屋の使い方</div>
@@ -354,7 +316,6 @@ onMounted(async () => {
       </div>
     </div>
 
-    <!-- 本人削除メニュー -->
     <div v-if="selVoice" class="fixed inset-0 bg-black/60 z-30 flex items-end" @click="selVoice = null">
       <div class="w-full bg-surface rounded-t-3xl p-5 space-y-3 pb-[max(1.5rem,env(safe-area-inset-bottom))]" @click.stop>
         <div class="text-sm text-slate-300">この声を消しますか? <span class="text-slate-500">({{ selVoice.duration.toFixed(1) }}秒・本人のみ削除可)</span></div>
@@ -373,5 +334,14 @@ onMounted(async () => {
 @keyframes float {
   0% { translate: 0 0; }
   100% { translate: 0 -24px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 </style>
