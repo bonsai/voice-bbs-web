@@ -1,0 +1,32 @@
+name: Deploy React PoC
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'apps/web-react/**'
+      - '.github/workflows/deploy-react-poc.yml'
+
+jobs:
+  build-deploy:
+    name: React PoC build / deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web-react
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install
+      - run: npm run typecheck
+      - run: npm run test -- --passWithNoTests
+      - run: npm run build
+      - name: Deploy to Cloudflare Pages
+        if: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 290e65605de6f2b8a5f61dbfaa36e28c
+          command: pages deploy dist --project-name voice-bbs-web-react --branch main
