@@ -1,0 +1,1 @@
+Shared Hono API endpoints are defined in api.ts.
