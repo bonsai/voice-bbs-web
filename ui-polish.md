@@ -1,0 +1,1 @@
+FE-only polish is tracked in Issue #6. Backend/API/data contracts are unchanged.
