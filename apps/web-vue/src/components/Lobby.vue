@@ -1,10 +1,10 @@
-// ロビー — カテゴリ + 部屋一覧 + 部屋作成(声で名前)。タッチ専用
+// ロビー — カテゴリ + 部屋一覧 + 部屋作成(声で名前)。Voice-first / touch-first
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { createApi, type Category, type Room } from '@/lib/api'
-import { setUIMode, uiMode } from '@/lib/uiMode'
 import CreateRoomSheet from '@/components/CreateRoomSheet.vue'
 import { playPop } from '@/lib/sfx'
+import { CategoryChip, DesignButton, RoomCard } from '@/components/ui'
 
 const props = defineProps<{ categories: Category[] }>()
 const emit = defineEmits<{ open: [room: Room] }>()
@@ -16,7 +16,6 @@ const loading = ref(false)
 const error = ref<string | null>(null)
 const sheet = ref(false)
 
-// --- PWA インストール導線(Phase1) ---
 interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
@@ -32,35 +31,16 @@ function onInstallPrompt(e: Event) {
   installEvt = e as BeforeInstallPromptEvent
   canInstall.value = true
 }
-window.addEventListener('beforeinstallprompt', onInstallPrompt)
 async function install() {
   if (!installEvt) return
   await installEvt.prompt()
   installEvt = null
   canInstall.value = false
 }
-
-// 装飾泡 (16 個: 4×4)
-const decoBubbles = Array.from({ length: 16 }, (_, i) => {
-  const h = i * 7 + 13
-  return {
-    x: 3 + (h % 9) * 10.5,
-    y: 40 + ((h >> 3) % 4) * 18,
-    dur: 4 + (h % 5),
-    delay: -(h % 7),
-    size: 14 + (h % 20),
-  }
-})
+window.addEventListener('beforeinstallprompt', onInstallPrompt)
 
 const catOf = (id: string) => props.categories.find((c) => c.id === id)
 const activeCategory = () => catOf(active.value) ?? props.categories[0]
-
-const hint = (m: 'A' | 'B' | 'C') =>
-  m === 'A'
-    ? '＋で部屋を作る → 部屋では下のボタンを長押しして吹き込む'
-    : m === 'B'
-      ? '＋で部屋を作る。部屋では泡に触れて聞く、空きを長押しで吹き込む'
-      : '＋で部屋を作る。部屋では下のハンドルを上にスワイプして吹き込む'
 
 async function load() {
   loading.value = true
@@ -93,7 +73,7 @@ async function created(title: string) {
   }
 }
 
-async function openRoom(r: Room) {
+function openRoom(r: Room) {
   playPop(0.3, 900)
   emit('open', r)
 }
@@ -105,7 +85,7 @@ function dismissMicBanner() {
 }
 
 onMounted(() => {
-  playPop(0.15, 600) // 起動ポップ
+  playPop(0.15, 600)
   void load()
   if (!localStorage.getItem('voice_bbs_mic_dismissed')) {
     navigator.permissions?.query({ name: 'microphone' as PermissionName }).then((r) => {
@@ -116,84 +96,87 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto max-w-3xl px-4 pt-6 pb-28 min-h-screen relative">
-    <div class="flex items-center justify-between">
-      <h1 class="text-2xl font-bold animate-title">声の部屋</h1>
-      <!-- パターン切替(検証用) -->
-      <div class="flex rounded-full border border-line overflow-hidden text-xs">
-        <button v-for="m in ['A', 'B', 'C'] as const" :key="m"
-          class="px-3 py-1.5 min-h-[36px]"
-          :class="uiMode === m ? 'bg-white text-slate-950' : 'text-slate-400'"
-          @click="setUIMode(m)">{{ m }}</button>
+  <main class="mx-auto min-h-screen w-full max-w-3xl px-4 pt-6 pb-28">
+    <header class="mb-5">
+      <div class="flex items-end justify-between gap-4">
+        <div class="min-w-0">
+          <p class="text-xs tracking-[0.18em] text-slate-500 uppercase">VOICE BBS</p>
+          <h1 class="mt-1 text-2xl font-bold tracking-tight">声の部屋</h1>
+          <p class="mt-1 text-sm text-slate-400">気になる部屋に入って、声で会話する。</p>
+        </div>
+      </div>
+    </header>
+
+    <section v-if="canInstall || micBanner" class="mb-5 space-y-2" aria-label="案内">
+      <div v-if="canInstall" class="rounded-[var(--radius-card)] border border-line bg-surface/80 px-4 py-3">
+        <div class="flex items-center gap-3">
+          <p class="flex-1 text-xs leading-5 text-slate-300">ホーム画面に追加すると全画面で使えます。</p>
+          <DesignButton label="追加" variant="secondary" @click="install" />
+        </div>
+      </div>
+      <div v-if="micBanner" class="rounded-[var(--radius-card)] border border-line bg-surface/80 px-4 py-3">
+        <div class="flex items-center gap-3">
+          <p class="flex-1 text-xs leading-5 text-slate-300">マイクを許可すると、部屋で声を吹き込めます。</p>
+          <DesignButton label="閉じる" variant="ghost" @click="dismissMicBanner" />
+        </div>
+      </div>
+    </section>
+
+    <section aria-label="カテゴリ" class="mb-5">
+      <div class="mb-2 flex items-center justify-between">
+        <h2 class="text-sm font-semibold text-slate-200">カテゴリ</h2>
+        <span class="text-xs text-slate-500">{{ rooms.length }} rooms</span>
+      </div>
+      <nav class="flex flex-wrap gap-2" aria-label="カテゴリフィルター">
+        <CategoryChip label="全部" :active="active === ''" @select="select('')" />
+        <CategoryChip
+          v-for="c in categories"
+          :key="c.id"
+          :label="c.name"
+          :color="c.color"
+          :active="active === c.id"
+          @select="select(c.id)"
+        />
+      </nav>
+    </section>
+
+    <p v-if="error" role="alert" class="mb-4 rounded-[var(--radius-card)] border border-rose-500/30 bg-rose-950/20 px-4 py-3 text-sm text-rose-300">{{ error }}</p>
+
+    <section aria-label="部屋一覧">
+      <div v-if="loading" class="grid grid-cols-1 gap-3 sm:grid-cols-2" aria-live="polite">
+        <div v-for="i in 4" :key="i" class="min-h-24 animate-pulse rounded-[var(--radius-card)] border border-line bg-surface/60" />
+      </div>
+
+      <div v-else-if="rooms.length" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <RoomCard
+          v-for="r in rooms"
+          :key="r.id"
+          :title="r.title || '無題の部屋'"
+          :category-name="catOf(r.category_id)?.name ?? r.category_id"
+          :category-color="catOf(r.category_id)?.color"
+          :post-count="r.post_count ?? 0"
+          @open="openRoom(r)"
+        />
+      </div>
+
+      <div v-else class="rounded-[var(--radius-card)] border border-dashed border-line px-5 py-10 text-center">
+        <p class="text-sm font-medium text-slate-300">まだ部屋がありません。</p>
+        <p class="mt-1 text-xs leading-5 text-slate-500">最初の部屋を作って、声を浮かべてみましょう。</p>
+      </div>
+    </section>
+
+    <div class="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-4 pointer-events-none">
+      <div class="mx-auto flex max-w-3xl justify-end">
+        <button
+          type="button"
+          class="pointer-events-auto grid size-16 place-items-center rounded-full bg-white text-3xl text-slate-950 shadow-xl shadow-black/25 transition-transform duration-160 active:scale-95 focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-4"
+          aria-label="新しい部屋を作る"
+          @click="sheet = true"
+        >
+          ＋
+        </button>
       </div>
     </div>
-    <p v-if="!loading && rooms.length === 0" class="text-slate-400 text-xs mt-1 mb-3">泡が現れるまで少しお待ちを</p>
-    <p v-else class="text-slate-400 text-xs mt-1 mb-3">UI {{ uiMode }}: {{ hint(uiMode) }}</p>
-
-    <!-- 装飾泡 (データ読み込み前に浮かせる) -->
-    <div v-if="loading" class="absolute inset-0 pointer-events-none overflow-hidden">
-      <div
-        v-for="(b, i) in decoBubbles"
-        :key="i"
-        class="absolute rounded-full opacity-[0.04]"
-        :style="{
-          width: b.size + 'px', height: b.size + 'px',
-          left: b.x + '%', top: b.y + '%', transform: 'translate(-50%,-50%)',
-          background: 'white',
-          animation: `float ${b.dur}s ease-in-out infinite alternate`, animationDelay: b.delay + 's',
-        }"
-      />
-    </div>
-
-    <div v-if="canInstall" class="mb-3 flex items-center gap-2 bg-surface-2/80 rounded-xl px-3 py-2">
-      <span class="flex-1 text-xs text-slate-300">ホーム画面に追加すると全画面で使えます</span>
-      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="install">インストール</button>
-    </div>
-    <div v-if="micBanner" class="mb-3 flex items-center gap-2 bg-surface-2/80 rounded-xl px-3 py-2">
-      <span class="flex-1 text-xs text-slate-300">マイクを許可すると、部屋で声を吹き込めます</span>
-      <button class="px-3 py-1.5 rounded-lg bg-white text-slate-950 text-xs shrink-0" @click="dismissMicBanner">閉じる</button>
-    </div>
-
-    <div class="flex gap-2 flex-wrap mb-4">
-      <button
-        class="px-3 py-1 rounded-full text-sm border transition-colors min-h-[44px]"
-        :class="active === '' ? 'border-white text-white' : 'border-line text-slate-400'"
-        @click="select('')"
-      >全部</button>
-      <button
-        v-for="c in categories" :key="c.id"
-        class="px-3 py-1 rounded-full text-sm border border-line min-h-[44px] transition-colors"
-        :class="active === c.id ? '' : 'text-slate-400'"
-        :style="active === c.id ? { borderColor: c.color, color: c.color } : {}"
-        @click="select(c.id)"
-      >{{ c.name }}</button>
-    </div>
-
-    <p v-if="error" class="text-rose-400 text-sm mb-3">{{ error }}</p>
-
-    <div class="grid grid-cols-2 gap-3">
-      <button
-        v-for="(r, i) in rooms" :key="r.id"
-        class="text-left rounded-2xl p-4 border border-line bg-surface/60 active:bg-surface-2 min-h-[92px] animate-card"
-        :style="{ animationDelay: (i * 0.06) + 's', boxShadow: `0 0 0 1px ${catOf(r.category_id)?.color ?? '#64748b'}44` }"
-        @click="openRoom(r)"
-      >
-        <div class="font-semibold truncate">{{ r.title || '無題の部屋' }}</div>
-        <div class="text-xs text-slate-400 mt-1 flex items-center gap-2">
-          <span :style="{ color: catOf(r.category_id)?.color }">{{ catOf(r.category_id)?.name ?? r.category_id }}</span>
-          <span>声 {{ r.post_count ?? 0 }}</span>
-        </div>
-      </button>
-    </div>
-    <p v-if="loading" class="text-slate-500 text-sm mt-4">読み込み中…</p>
-    <p v-else-if="rooms.length === 0" class="text-slate-500 text-sm mt-4">部屋がありません。＋で作れます</p>
-
-    <!-- 部屋を作る(全モード共通 CTA) -->
-    <button
-      class="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] right-4 w-16 h-16 rounded-full bg-white text-slate-950 text-3xl shadow-xl active:scale-95"
-      aria-label="新しい部屋"
-      @click="sheet = true"
-    >＋</button>
 
     <CreateRoomSheet
       v-if="sheet"
@@ -202,5 +185,5 @@ onMounted(() => {
       @close="sheet = false"
       @create="created"
     />
-  </div>
+  </main>
 </template>
