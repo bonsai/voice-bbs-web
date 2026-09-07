@@ -1,3 +1,6 @@
 export { default as DesignButton } from './DesignButton.vue'
 export { default as DesignPanel } from './DesignPanel.vue'
 export { default as DesignSheet } from './DesignSheet.vue'
+export { default as VoiceBubble } from './VoiceBubble.vue'
+export { default as CategoryChip } from './CategoryChip.vue'
+export { default as RoomCard } from './RoomCard.vue'
