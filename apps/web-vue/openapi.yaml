@@ -1,0 +1,108 @@
+openapi: 3.0.3
+info:
+  title: Voice BBS Web API
+  description: Anonymous voice BBS API implemented by Hono on Cloudflare Pages Functions.
+  version: 2.1.0
+servers:
+  - url: https://voice-bbs-web.pages.dev/api
+    description: Cloudflare Pages Production
+  - url: http://localhost:8788/api
+    description: Local Pages Functions dev
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      responses:
+        '200': { description: OK }
+  /categories:
+    get:
+      operationId: listCategories
+      responses:
+        '200': { description: Category list }
+  /threads:
+    get:
+      operationId: listThreads
+      parameters:
+        - { name: category, in: query, schema: { type: string } }
+        - { name: q, in: query, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 100 } }
+      responses:
+        '200': { description: Thread list }
+    post:
+      operationId: createThread
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [category_id, device_id]
+              properties:
+                category_id: { type: string }
+                title: { type: string, nullable: true }
+                device_id: { type: string }
+      responses:
+        '200': { description: Created }
+        '400': { description: Missing required fields }
+        '429': { description: Daily limit reached }
+  /threads/{id}/posts:
+    get:
+      operationId: listPosts
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Post list }
+    post:
+      operationId: createPost
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [image_base64, duration, device_id]
+              properties:
+                image_base64: { type: string, description: Base64 PNG payload }
+                duration: { type: number, format: float }
+                device_id: { type: string }
+                content: { type: string, nullable: true }
+      responses:
+        '200': { description: Created }
+        '400': { description: Missing required fields }
+        '429': { description: Daily limit reached }
+  /audio/{key}:
+    get:
+      operationId: getAudioImage
+      parameters:
+        - { name: key, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: PNG image }
+        '404': { description: Object not found }
+  /posts/{id}:
+    delete:
+      operationId: deletePost
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: device_id, in: query, required: false, schema: { type: string } }
+        - { name: X-Admin-Token, in: header, required: false, schema: { type: string } }
+      responses:
+        '200': { description: Deleted }
+        '400': { description: Missing owner identity }
+        '403': { description: Forbidden }
+        '404': { description: Not found }
+  /count/{device_id}:
+    get:
+      operationId: countByDevice
+      parameters:
+        - { name: device_id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Current daily usage and remaining quota }
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        ok: { type: boolean }
+        error: { type: string }
