@@ -22,9 +22,10 @@ const emit = defineEmits<{ activate: [] }>()
     :style="{ width: `${size}px`, height: `${size}px` }"
     :aria-label="label"
     :aria-pressed="state === 'playing'"
+    :disabled="state === 'deleted'"
     @click="emit('activate')"
   >
-    <slot>{{ state === 'loading' ? '…' : state === 'error' ? '!' : '●' }}</slot>
+    <slot>{{ state === 'loading' ? '…' : state === 'error' ? '!' : state === 'playing' ? '♪' : '●' }}</slot>
   </button>
 </template>
 
@@ -38,10 +39,14 @@ const emit = defineEmits<{ activate: [] }>()
   color: var(--color-cat-none);
   box-shadow: var(--shadow-bubble);
   cursor: pointer;
+  font: inherit;
+  touch-action: manipulation;
   transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
 }
 .voice-bubble:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
 .voice-bubble:hover:not(:disabled) { transform: scale(1.03); }
+.voice-bubble:active:not(:disabled) { transform: scale(0.98); }
+.voice-bubble:disabled { cursor: default; }
 .voice-bubble--want { color: var(--color-cat-want); }
 .voice-bubble--search { color: var(--color-cat-search); }
 .voice-bubble--trouble { color: var(--color-cat-trouble); }
@@ -49,7 +54,7 @@ const emit = defineEmits<{ activate: [] }>()
 .voice-bubble--owner { color: var(--color-owner); }
 .voice-bubble--playing { box-shadow: var(--shadow-bubble-play); transform: scale(1.05); }
 .voice-bubble--loading { opacity: 0.7; }
-.voice-bubble--error { color: #fca5a5; border-color: #ef4444; }
+.voice-bubble--error { color: var(--color-cat-trouble); border-color: var(--color-cat-trouble); }
 .voice-bubble--deleted { opacity: 0.35; text-decoration: line-through; }
 @media (prefers-reduced-motion: reduce) { .voice-bubble { transition: none; } }
 </style>
