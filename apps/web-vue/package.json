@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:hono": "npm run build && wrangler pages dev dist",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview",
     "test": "vitest run",
+    "test:hono": "vitest run functions/**/*.test.ts",
     "typecheck": "vue-tsc -b",
     "seed:tts": "node scripts/seed-tts.mjs",
     "seed:tts:remote": "node scripts/seed-tts.mjs --remote"
