@@ -68,8 +68,19 @@ apps/web-next/
 - lint: ESLint (`npm run lint`) — 設定あり
 - typecheck: script 未定義 (`npx tsc --noEmit` 相当は手動)
 - **test: 未導入** (vitest 等なし) — 方針は `docs/test.md`、導入は `docs/issue.md` N5
-- **CI/CD: 未導入** — `docs/issue.md` のデプロイ戦略節に集約
+- **CI/CD: 部分導入** — `apps/web-react` のみ `.github/workflows/deploy-react-poc.yml` で Pages 自動デプロイあり。web-next は手動 (`docs/deploy.md`)
 
 ## 5. 運用・デプロイ
 
 → **`docs/deploy.md`** に分離。認証 / 手順 / 実リソース / 罠 / 自動化方針を参照。
+
+## 6. apps 三本の役割と本番対応 (2026-10-07 時点)
+
+| app | 役割 | Pages project | 状態 |
+|---|---|---|---|
+| `apps/web-next` | **本命・本番**。Next.js 15 static export + Hono Functions + D1/R2 | `voice-bbs-web` | 本番稼働中。`?kids=1` / `?age=` の属性ルーター (`src/lib/attributeRouter.ts`) 搭載 |
+| `apps/web-vue` | ADR-001 の移行先候補 (Vue 3 + Vite)。比較・ロールバック用に残置 | — | 開発中 |
+| `apps/web-react` | React 最小 PoC (Vite)。比較測定用 | `voice-bbs-web-react` | デプロイ済み (CI 自動) |
+
+> ADR-001 (Vue 移行) は「採用」記録のままだが、本番は web-next のまま稼働中。切替判断は未完 (`docs/issue.md` 参照)。三者の評価モデルは `docs/frontend-stack-comparison.md`、Next/Vue 実測値は `docs/compare-next-vue.md`。
+> 退役した重複ドラフトは `docs/archive/stack-2026-09/` に保管 (理由は同ディレクトリ README)。
