@@ -70,6 +70,7 @@ export default function Home() {
       <BubbleField
         threads={threads}
         onSelect={setSelectedThread}
+        kids={route.kids}
       />
 
       <div className="fixed bottom-6 right-6 z-40">
