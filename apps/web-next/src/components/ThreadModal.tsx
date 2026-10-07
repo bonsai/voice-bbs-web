@@ -16,10 +16,12 @@ export default function ThreadModal({
   thread,
   onClose,
   onUpdate,
+  kids = false,
 }: {
   thread: { id: string; title?: string; color?: string };
   onClose: () => void;
   onUpdate: () => void;
+  kids?: boolean;
 }) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,9 +65,13 @@ export default function ThreadModal({
       <div className="relative w-full max-w-md h-[80vh] bg-slate-900 rounded-2xl border border-white/10 flex flex-col overflow-hidden shadow-2xl">
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
           <h2 className="text-white font-semibold truncate" style={{ color: thread.color }}>
-            {thread.title || "スレッド"}
+            {thread.title || (kids ? "おへや" : "スレッド")}
           </h2>
-          <button onClick={onClose} className="text-white/60 hover:text-white text-xl">
+          <button
+            onClick={onClose}
+            aria-label={kids ? "とじる" : "閉じる"}
+            className={kids ? "min-h-[44px] min-w-[44px] text-2xl text-white/60 hover:text-white" : "text-white/60 hover:text-white text-xl"}
+          >
             ×
           </button>
         </div>
@@ -109,12 +115,12 @@ export default function ThreadModal({
             </button>
           ))}
           {!loading && posts.length === 0 && (
-            <p className="text-white/40 text-center">まだ声がありません。最初の声を残しましょう。</p>
+            <p className="text-white/40 text-center">{kids ? "まだ こえが ないよ。さいしょの こえを のこそう！" : "まだ声がありません。最初の声を残しましょう。"}</p>
           )}
         </div>
 
         <div className="p-3 border-t border-white/10">
-          <Recorder onUpload={handleUpload} />
+          <Recorder onUpload={handleUpload} kids={kids} />
         </div>
       </div>
     </div>

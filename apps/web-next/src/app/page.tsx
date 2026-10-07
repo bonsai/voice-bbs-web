@@ -15,6 +15,7 @@ export default function Home() {
   const [showNew, setShowNew] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newCategory, setNewCategory] = useState("");
+  const [kidsTitleError, setKidsTitleError] = useState("");
 
   const load = async () => {
     try {
@@ -37,6 +38,12 @@ export default function Home() {
 
   const createThread = async () => {
     if (!newCategory) return;
+    // kids: でんわばんごうっぽい数字列は止める (docs/ux-kids.md §3 録音前チェック)
+    if (route.kids && /[0-9０-９]{2,}-?[0-9０-９]{2,}-?[0-9０-９]{3,}/.test(newTitle)) {
+      setKidsTitleError("でんわばんごうみたいな すうじは だめだよ");
+      return;
+    }
+    setKidsTitleError("");
     try {
       const res = await api.createThread({ category_id: newCategory, title: newTitle || undefined });
       setShowNew(false);
@@ -79,6 +86,7 @@ export default function Home() {
           thread={selectedThread}
           onClose={() => setSelectedThread(null)}
           onUpdate={load}
+          kids={route.kids}
         />
       )}
 
@@ -107,6 +115,9 @@ export default function Home() {
               placeholder={route.kids ? "おだいをつけてね (なくてもOK)" : "タイトル（任意）"}
               className="w-full px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-pink-500/50"
             />
+            {route.kids && kidsTitleError && (
+              <p className="text-sm font-bold text-red-300">{kidsTitleError}</p>
+            )}
             <div className="flex justify-end gap-2">
               <button onClick={() => setShowNew(false)} className="px-4 py-2 text-sm text-white/60 hover:text-white">
                 キャンセル

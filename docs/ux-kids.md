@@ -88,7 +88,7 @@ const KIDS_LABELS: Record<string, string> = {
 
 ## 8. 実装順
 
-1. `page.tsx` に `kids = searchParams.kids === '1'` + テーマ分岐 ✅ (本PR)
-2. `CategoryTabs.tsx` に kidsラベルマップ ✅ (本PR)
-3. `Recorder.tsx` に 2タップフロー + おやくそく (次PR)
+1. `page.tsx` に `kids = searchParams.kids === '1'` + テーマ分岐 ✅ 実装済み
+2. `CategoryTabs.tsx` に kidsラベルマップ ✅ 実装済み
+3. `Recorder.tsx` に 2タップフロー + おやくそく ✅ 実装済み (`PromiseSheet.tsx`、10秒自動ストップ、`おくる`/`やりなおし`)
 4. `BubbleField.tsx` 80px+ / 通報ボタン (次PR)
